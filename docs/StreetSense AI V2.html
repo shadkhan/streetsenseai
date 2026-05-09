@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>StreetSense AI — Cross-Authority Roadworks Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* ---------- Tokens ---------- */
+  :root {
+    --primary: #1E3A5F;
+    --primary-light: #E8EEF5;
+    --accent: #F97316;
+    --risk-low: #059669;
+    --risk-med: #D97706;
+    --risk-high: #EA580C;
+    --risk-critical: #DC2626;
+    --surface-page: #FAFAFA;
+    --surface-panel: #F4F4F5;
+    --surface-white: #FFFFFF;
+    --border: #E4E4E7;
+    --ink: #18181B;
+    --ink-muted: #52525B;
+    --ink-subtle: #A1A1AA;
+    --map-blue: #3B82F6;
+    --primary-2: #2A4B6F;
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: var(--font-sans);
+    color: var(--ink);
+    background: var(--surface-white);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    line-height: 1.5;
+  }
+
+  a { color: inherit; text-decoration: none; }
+  button { font-family: inherit; cursor: pointer; }
+
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 0 32px; }
+
+  /* ---------- Nav ---------- */
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    height: 56px;
+    background: var(--surface-white);
+    border-bottom: 1px solid var(--border);
+    z-index: 50;
+    transition: box-shadow 200ms ease;
+  }
+  .nav.scrolled {
+    box-shadow: 0 1px 4px rgba(24, 24, 27, 0.06), 0 4px 12px rgba(24, 24, 27, 0.04);
+  }
+  .nav-inner {
+    height: 100%;
+    display: flex; align-items: center; justify-content: space-between;
+    max-width: 1240px; margin: 0 auto; padding: 0 32px;
+    gap: 24px;
+  }
+  .nav-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .logo-mark {
+    width: 22px; height: 22px;
+    background: var(--accent);
+    border-radius: 4px;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: white;
+    flex-shrink: 0;
+  }
+  .logo-mark svg { width: 13px; height: 13px; stroke-width: 2.5; }
+  .brand {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--primary);
+    letter-spacing: -0.01em;
+  }
+  .brand .ai { color: var(--accent); }
+  .nav-divider {
+    width: 1px; height: 18px; background: var(--border);
+  }
+  .open-data-badge {
+    font-size: 11px;
+    background: var(--surface-panel);
+    color: var(--ink-muted);
+    border-radius: 999px;
+    padding: 3px 9px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .nav-center { display: flex; align-items: center; gap: 26px; }
+  .nav-link {
+    font-size: 13px;
+    color: var(--ink-muted);
+    font-weight: 500;
+    transition: color 150ms ease;
+  }
+  .nav-link:hover { color: var(--primary); }
+
+  .nav-right { display: flex; align-items: center; gap: 10px; }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 6px;
+    font-weight: 600;
+    border-radius: 6px;
+    transition: all 180ms ease;
+    border: 1px solid transparent;
+    text-decoration: none;
+    line-height: 1;
+  }
+  .btn-outline {
+    border-color: var(--border);
+    color: var(--primary);
+    background: var(--surface-white);
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  .btn-outline:hover { border-color: var(--primary); }
+  .btn-primary {
+    background: var(--primary);
+    color: white;
+    padding: 9px 14px;
+    font-size: 13px;
+  }
+  .btn-primary:hover { background: #16314F; }
+
+  @media (max-width: 880px) {
+    .nav-center { display: none; }
+    .open-data-badge, .nav-divider { display: none; }
+    .btn-outline { display: none; }
+  }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    background: var(--primary);
+    min-height: 90vh;
+    color: white;
+    padding-top: 56px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    align-items: center;
+    min-height: calc(90vh - 56px);
+    padding: 80px 0;
+  }
+  .hero-left { max-width: 560px; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(232, 238, 245, 0.10);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.78);
+    font-weight: 500;
+    margin-bottom: 28px;
+    backdrop-filter: blur(4px);
+  }
+  .pulse-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.6);
+    animation: pulse 2s infinite;
+    flex-shrink: 0;
+  }
+  @keyframes pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.55); }
+    70%  { box-shadow: 0 0 0 8px rgba(249, 115, 22, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0); }
+  }
+  .hero h1 {
+    font-size: 56px;
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+    font-weight: 700;
+    margin: 0 0 24px;
+    color: white;
+    text-wrap: balance;
+  }
+  .hero-sub {
+    font-size: 20px;
+    line-height: 1.45;
+    font-weight: 500;
+    color: rgba(255,255,255,0.7);
+    max-width: 460px;
+    margin: 0 0 36px;
+  }
+  .hero-ctas {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+    max-width: 380px;
+    margin-bottom: 32px;
+  }
+  .btn-hero-primary {
+    background: white;
+    color: var(--primary);
+    height: 44px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 8px;
+    width: 100%;
+  }
+  .btn-hero-primary:hover { background: var(--primary-light); transform: translateY(-1px); }
+  .btn-hero-secondary {
+    color: rgba(255,255,255,0.6);
+    font-size: 13px;
+    padding: 8px 0;
+    background: transparent;
+    border: none;
+    display: inline-flex; align-items: center; gap: 6px;
+    align-self: flex-start;
+    transition: color 150ms ease;
+  }
+  .btn-hero-secondary:hover { color: white; }
+  .btn-hero-secondary span { border-bottom: 1px solid transparent; transition: border-color 150ms ease; }
+  .btn-hero-secondary:hover span { border-bottom-color: rgba(255,255,255,0.4); }
+  .btn-hero-secondary svg { width: 12px; height: 12px; }
+
+  .trust-row {
+    display: flex; flex-wrap: wrap; gap: 18px 22px;
+  }
+  .trust-item {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+    font-weight: 500;
+  }
+  .trust-item svg { width: 13px; height: 13px; color: rgba(255,255,255,0.55); flex-shrink: 0; }
+
+  /* Hero map */
+  .hero-right {
+    position: relative;
+    height: 540px;
+    width: 100%;
+  }
+  .hero-map-svg {
+    width: 100%; height: 100%;
+    display: block;
+  }
+  .map-card {
+    position: absolute;
+    top: 24px;
+    right: 0;
+    width: 290px;
+    background: white;
+    color: var(--ink);
+    border-radius: 10px;
+    padding: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25), 0 2px 6px rgba(0,0,0,0.12);
+    border: 1px solid rgba(255,255,255,0.6);
+  }
+  .map-card-head {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .map-card-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .crit-badge {
+    background: var(--risk-critical);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 3px 7px;
+    border-radius: 4px;
+  }
+  .map-card-meta {
+    font-size: 12px;
+    color: var(--ink-muted);
+    margin-bottom: 12px;
+  }
+  .map-card-perms {
+    display: flex; flex-wrap: wrap; gap: 4px;
+  }
+  .perm-chip {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    background: var(--surface-panel);
+    color: var(--ink-muted);
+    border-radius: 4px;
+    padding: 3px 6px;
+    border: 1px solid var(--border);
+  }
+
+  @keyframes critGlow {
+    0%, 100% { filter: drop-shadow(0 0 2px rgba(249,115,22,0.6)); }
+    50%      { filter: drop-shadow(0 0 10px rgba(249,115,22,0.95)); }
+  }
+  .crit-corridor { animation: critGlow 2.4s ease-in-out infinite; }
+
+  @media (max-width: 960px) {
+    .hero-grid { grid-template-columns: 1fr; padding: 56px 0; }
+    .hero-right { display: none; }
+    .hero h1 { font-size: 40px; }
+    .hero-sub { font-size: 17px; }
+  }
+
+  /* ---------- Section base ---------- */
+  section { scroll-margin-top: 72px; }
+  .section { padding: 96px 0; }
+  .section-label {
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    color: var(--ink-subtle);
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  .section-label.on-dark { color: rgba(255,255,255,0.5); }
+  .section-h {
+    font-size: 36px;
+    font-weight: 600;
+    color: var(--primary);
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    margin: 0 0 40px;
+    text-wrap: balance;
+  }
+  .section-h.on-dark { color: white; }
+
+  /* ---------- Section 3: Stats ---------- */
+  .stats-section { background: white; }
+  .stats-section .wrap { max-width: 980px; }
+  .stats-head { text-align: center; margin-bottom: 56px; }
+  .stats-head .section-label { margin-bottom: 0; }
+  .stats-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+  .stat {
+    text-align: center;
+    padding: 16px 24px;
+    border-right: 1px solid var(--border);
+  }
+  .stat:last-child { border-right: none; }
+  .stat-num {
+    font-size: 56px;
+    font-weight: 700;
+    color: var(--primary);
+    letter-spacing: -0.03em;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 14px;
+  }
+  .stat-num.coral { color: var(--accent); }
+  .stat-num.mono { font-family: var(--font-mono); font-size: 44px; font-weight: 600; }
+  .stat-label { font-size: 14px; color: var(--ink-muted); font-weight: 500; margin-bottom: 6px; }
+  .stat-sub { font-size: 12px; color: var(--ink-subtle); }
+  .stats-paragraph {
+    margin: 56px auto 0;
+    max-width: 620px;
+    text-align: center;
+    font-size: 16px;
+    color: var(--ink-muted);
+    line-height: 1.65;
+  }
+  .stats-source {
+    margin: 12px auto 0;
+    max-width: 620px;
+    text-align: center;
+    font-size: 11px;
+    color: var(--ink-subtle);
+    font-family: var(--font-mono);
+    line-height: 1.5;
+  }
+  @media (max-width: 760px) {
+    .stats-row { grid-template-columns: 1fr; }
+    .stat { border-right: none; border-bottom: 1px solid var(--border); padding: 28px 0; }
+    .stat:last-child { border-bottom: none; }
+  }
+
+  /* ---------- Section 4: Capabilities ---------- */
+  .caps-section { background: var(--surface-page); }
+  .caps-head { margin-bottom: 48px; max-width: 720px; }
+  .caps-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .cap-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: transform 200ms ease, box-shadow 200ms ease;
+    display: flex; flex-direction: column;
+  }
+  .cap-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(24,24,27,0.08), 0 2px 6px rgba(24,24,27,0.04);
+  }
+  .cap-bar { height: 4px; width: 100%; }
+  .cap-bar.green  { background: var(--risk-low); }
+  .cap-bar.slate  { background: var(--primary); }
+  .cap-bar.coral  { background: var(--accent); }
+  .cap-body { padding: 24px; flex: 1; display: flex; flex-direction: column; }
+  .cap-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    background: rgba(249,115,22,0.10);
+    color: var(--accent);
+    display: inline-flex; align-items: center; justify-content: center;
+    margin-bottom: 16px;
+  }
+  .cap-icon svg { width: 20px; height: 20px; stroke-width: 2; }
+  .cap-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--primary);
+    margin: 0 0 12px;
+    letter-spacing: -0.015em;
+  }
+  .cap-text {
+    font-size: 14px;
+    color: var(--ink-muted);
+    line-height: 1.6;
+    margin: 0 0 20px;
+    flex: 1;
+  }
+  .status-badge {
+    display: inline-block;
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 5px 10px;
+    border-radius: 999px;
+    align-self: flex-start;
+    letter-spacing: 0.005em;
+  }
+  .status-badge.amber { background: #FEF3C7; color: #92400E; }
+  .status-badge.red   { background: #FEE2E2; color: #991B1B; }
+  @media (max-width: 960px) {
+    .caps-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ---------- Section 5: Live preview table ---------- */
+  .preview-section { background: white; }
+  .preview-head { margin-bottom: 36px; max-width: 720px; }
+  .table-wrap {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    overflow-x: auto;
+  }
+  table.corridors {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    min-width: 760px;
+  }
+  table.corridors thead {
+    background: var(--primary);
+    color: white;
+  }
+  table.corridors th {
+    text-align: left;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    padding: 14px 18px;
+  }
+  table.corridors td {
+    padding: 14px 18px;
+    border-top: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  table.corridors tbody tr {
+    background: white;
+    transition: background 150ms ease;
+  }
+  table.corridors tbody tr:nth-child(even) { background: var(--surface-page); }
+  table.corridors tbody tr:hover { background: var(--primary-light); }
+  .corridor-name { color: var(--primary); font-weight: 600; font-size: 14px; }
+  .col-auth { color: var(--ink-muted); font-size: 12px; }
+  .col-num { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--ink); }
+  .col-prom { color: var(--ink-muted); font-size: 13px; }
+
+  .risk-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+  .risk-pill .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .risk-pill.critical { background: rgba(220,38,38,0.10); color: var(--risk-critical); }
+  .risk-pill.critical .dot { background: var(--risk-critical); }
+  .risk-pill.high { background: rgba(234,88,12,0.10); color: var(--risk-high); }
+  .risk-pill.high .dot { background: var(--risk-high); }
+  .risk-pill.medium { background: rgba(217,119,6,0.10); color: var(--risk-med); }
+  .risk-pill.medium .dot { background: var(--risk-med); }
+  .risk-pill.low { background: rgba(5,150,105,0.10); color: var(--risk-low); }
+  .risk-pill.low .dot { background: var(--risk-low); }
+
+  .table-note {
+    margin-top: 14px;
+    font-size: 12px;
+    color: var(--ink-subtle);
+  }
+
+  /* ---------- Section 6: Data sources ---------- */
+  .sources-section { background: var(--surface-page); }
+  .sources-section .wrap { max-width: 880px; }
+  .sources-head { text-align: center; margin-bottom: 48px; }
+  .sources-head .section-label { margin-bottom: 14px; }
+  .sources-head .section-h { font-size: 32px; margin-bottom: 0; }
+  .sources-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .source-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .src-badge {
+    align-self: flex-start;
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--ink-muted);
+    background: var(--surface-panel);
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.02em;
+  }
+  .src-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--primary);
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+  .src-body {
+    font-size: 13.5px;
+    color: var(--ink-muted);
+    line-height: 1.55;
+    margin: 0;
+    flex: 1;
+  }
+  .src-foot {
+    font-size: 12px;
+    color: var(--ink-subtle);
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+    font-family: var(--font-mono);
+  }
+  .src-link {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-subtle);
+    text-decoration: none;
+    transition: color 150ms ease;
+  }
+  .src-link:hover { color: var(--primary); }
+  .attr-line {
+    text-align: center;
+    margin-top: 32px;
+    font-size: 12px;
+    color: var(--ink-subtle);
+    line-height: 1.6;
+  }
+  @media (max-width: 720px) {
+    .sources-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ---------- Section 7: Roadmap gap ---------- */
+  .roadmap-section {
+    background: var(--primary);
+    color: white;
+  }
+  .roadmap-section .wrap { max-width: 820px; }
+  .roadmap-head { margin-bottom: 36px; }
+  .roadmap-head .section-h { color: white; max-width: 700px; }
+  .roadmap-card {
+    background: var(--primary-2);
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 12px;
+    padding: 24px;
+  }
+  .roadmap-card-label {
+    font-size: 12px;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 16px;
+    letter-spacing: 0.02em;
+  }
+  .rm-row {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr auto;
+    gap: 16px;
+    align-items: center;
+    padding: 16px 18px;
+    border-left: 3px solid var(--risk-med);
+    background: rgba(255,255,255,0.03);
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 10px;
+  }
+  .rm-row.red { border-left-color: var(--risk-critical); }
+  .rm-row:last-child { margin-bottom: 0; }
+  .rm-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 4px;
+  }
+  .rm-sub {
+    font-size: 12.5px;
+    color: rgba(255,255,255,0.6);
+  }
+  .rm-phase {
+    font-size: 12px;
+    color: rgba(255,255,255,0.7);
+    font-family: var(--font-mono);
+  }
+  .rm-date-badge {
+    background: rgba(217,119,6,0.18);
+    color: #FCD34D;
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 5px 10px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  .rm-date-badge.red {
+    background: rgba(220,38,38,0.18);
+    color: #FCA5A5;
+  }
+  .roadmap-paras {
+    margin-top: 32px;
+    font-size: 16px;
+    line-height: 1.65;
+    color: rgba(255,255,255,0.8);
+  }
+  .roadmap-paras p { margin: 0 0 16px; }
+  .roadmap-paras p:last-child { margin: 0; }
+  @media (max-width: 700px) {
+    .rm-row { grid-template-columns: 1fr; gap: 6px; }
+  }
+
+  /* ---------- Section 8: Final CTA ---------- */
+  .finalcta-section {
+    background: white;
+    text-align: center;
+    padding: 120px 0;
+  }
+  .final-pill {
+    display: inline-block;
+    background: var(--primary);
+    color: white;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 6px 14px;
+    border-radius: 999px;
+    margin-bottom: 24px;
+  }
+  .final-h {
+    font-size: 40px;
+    font-weight: 600;
+    color: var(--primary);
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    max-width: 560px;
+    margin: 0 auto 16px;
+    text-wrap: balance;
+  }
+  .final-sub {
+    font-size: 18px;
+    color: var(--ink-muted);
+    margin: 0 auto 36px;
+    max-width: 560px;
+  }
+  .btn-final {
+    background: white;
+    color: var(--primary);
+    border: 1.5px solid var(--primary);
+    height: 48px;
+    width: 200px;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all 200ms ease;
+    margin-bottom: 28px;
+  }
+  .btn-final:hover { background: var(--primary); color: white; }
+  .final-stats {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    justify-content: center;
+    font-size: 13px;
+    color: var(--ink-subtle);
+  }
+  .final-stats span { white-space: nowrap; }
+  .final-stats .sep { color: var(--ink-subtle); opacity: 0.6; }
+
+  /* ---------- Footer ---------- */
+  .footer {
+    background: var(--primary);
+    color: white;
+    padding: 64px 0;
+    text-align: center;
+  }
+  .foot-brand {
+    display: inline-flex; align-items: center; gap: 10px;
+    margin-bottom: 8px;
+  }
+  .foot-tagline {
+    font-size: 13px;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 8px;
+  }
+  .foot-live {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.65);
+  }
+  .green-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--risk-low);
+    box-shadow: 0 0 0 0 rgba(5,150,105,0.6);
+    animation: pulseGreen 2s infinite;
+  }
+  @keyframes pulseGreen {
+    0%   { box-shadow: 0 0 0 0 rgba(5,150,105,0.6); }
+    70%  { box-shadow: 0 0 0 8px rgba(5,150,105,0); }
+    100% { box-shadow: 0 0 0 0 rgba(5,150,105,0); }
+  }
+  .foot-links {
+    margin-top: 24px;
+    display: flex; flex-wrap: wrap; justify-content: center;
+    gap: 0 14px;
+    font-size: 13px;
+  }
+  .foot-links a {
+    color: rgba(255,255,255,0.6);
+    transition: color 150ms ease;
+  }
+  .foot-links a:hover { color: white; }
+  .foot-links .sep { color: rgba(255,255,255,0.3); }
+  .foot-attr {
+    margin-top: 24px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.4);
+    line-height: 1.6;
+    max-width: 720px;
+    margin-left: auto; margin-right: auto;
+    padding: 0 16px;
+  }
+
+  /* ---------- Reveal ---------- */
+  .reveal { opacity: 0; transform: translateY(8px); transition: opacity 600ms ease, transform 600ms ease; }
+  .reveal.in { opacity: 1; transform: none; }
+
+  /* utility */
+  @media (max-width: 600px) {
+    .wrap { padding: 0 20px; }
+    .nav-inner { padding: 0 20px; }
+    .section { padding: 72px 0; }
+    .hero h1 { font-size: 34px; }
+    .section-h { font-size: 28px; }
+    .final-h { font-size: 30px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============== NAV ============== -->
+<nav class="nav" id="nav">
+  <div class="nav-inner">
+    <div class="nav-left">
+      <span class="logo-mark" aria-hidden="true">
+        <!-- map pin -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+      </span>
+      <span class="brand">StreetSense<span class="ai">AI</span></span>
+      <span class="nav-divider"></span>
+      <span class="open-data-badge">Built on UK Open Data</span>
+    </div>
+    <div class="nav-center">
+      <a href="#how" class="nav-link">How it works</a>
+      <a href="#sources" class="nav-link">Data sources</a>
+      <a href="#roadmap" class="nav-link">Roadmap gap</a>
+      <a href="#map" class="nav-link">Try the map</a>
+    </div>
+    <div class="nav-right">
+      <a href="#" class="btn btn-outline">View on GitHub</a>
+      <a href="#map" class="btn btn-primary">Try the map →</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ============== HERO ============== -->
+<section class="hero" id="how">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div class="hero-left">
+        <div class="hero-badge">
+          <span class="pulse-dot"></span>
+          Street Manager API v7 · Live Data
+        </div>
+        <h1>See every roadworks decision before it's made.</h1>
+        <p class="hero-sub">Cross-authority corridor risk scoring, underground asset awareness, and a plain-English AI copilot — for the permit officers and network coordinators who keep England moving. Built on UK open data. Free to use.</p>
+
+        <div class="hero-ctas">
+          <a href="#map" class="btn btn-hero-primary">Explore the map →</a>
+          <a href="#sources" class="btn-hero-secondary">
+            <span>Read the technical overview</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg>
+          </a>
+        </div>
+
+        <div class="trust-row">
+          <span class="trust-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Open Government Licence data
+          </span>
+          <span class="trust-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            No login required
+          </span>
+          <span class="trust-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Street Manager v7 API
+          </span>
+        </div>
+      </div>
+
+      <div class="hero-right">
+        <!-- Stylised England map -->
+        <svg class="hero-map-svg" viewBox="0 0 480 540" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <!-- Subtle grid -->
+          <defs>
+            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+              <path d="M40 0 L0 0 0 40" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+            </pattern>
+          </defs>
+          <rect width="480" height="540" fill="url(#grid)"/>
+
+          <!-- Stylised England outline -->
+          <path d="M210 40
+                   C 250 50, 280 60, 300 90
+                   C 320 120, 340 140, 350 180
+                   C 360 220, 350 250, 360 290
+                   C 370 330, 360 370, 340 410
+                   C 320 450, 280 480, 240 490
+                   C 200 500, 170 490, 150 460
+                   C 120 440, 100 410, 105 370
+                   C 95 330, 110 290, 100 250
+                   C 105 210, 130 180, 140 140
+                   C 150 100, 175 60, 210 40 Z"
+                fill="#2A4B6F" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+
+          <!-- Inner regions hint -->
+          <path d="M180 200 C 220 210, 260 230, 270 270" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+          <path d="M150 320 C 200 310, 250 320, 300 340" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+
+          <!-- Green corridors (low risk) -->
+          <path d="M165 100 L 220 150" stroke="#059669" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M280 400 L 330 440" stroke="#059669" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+          <!-- Amber corridors (medium) -->
+          <path d="M195 220 L 250 270" stroke="#D97706" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M280 180 L 330 220" stroke="#D97706" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M155 380 L 210 410" stroke="#D97706" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+          <!-- Orange corridors (high) -->
+          <path d="M220 120 L 280 160" stroke="#EA580C" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <path d="M170 280 L 230 320" stroke="#EA580C" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+          <!-- Critical corridor — A38 Birmingham -->
+          <g class="crit-corridor">
+            <path d="M195 270 L 270 320" stroke="#F97316" stroke-width="4" fill="none" stroke-linecap="round"/>
+          </g>
+
+          <!-- Works markers -->
+          <circle cx="172" cy="105" r="3.5" fill="#3B82F6"/>
+          <circle cx="218" cy="148" r="3.5" fill="#3B82F6"/>
+          <circle cx="225" cy="125" r="3.5" fill="#3B82F6"/>
+          <circle cx="265" cy="155" r="3.5" fill="#3B82F6"/>
+          <circle cx="200" cy="225" r="3.5" fill="#3B82F6"/>
+          <circle cx="245" cy="265" r="3.5" fill="#3B82F6"/>
+          <circle cx="285" cy="185" r="3.5" fill="#3B82F6"/>
+          <circle cx="325" cy="215" r="3.5" fill="#3B82F6"/>
+          <circle cx="180" cy="285" r="4" fill="#3B82F6"/>
+          <circle cx="225" cy="315" r="4" fill="#3B82F6"/>
+          <circle cx="200" cy="275" r="4.5" fill="#F97316" stroke="white" stroke-width="1.5"/>
+          <circle cx="235" cy="295" r="4.5" fill="#F97316" stroke="white" stroke-width="1.5"/>
+          <circle cx="265" cy="318" r="4.5" fill="#F97316" stroke="white" stroke-width="1.5"/>
+          <circle cx="160" cy="382" r="3.5" fill="#3B82F6"/>
+          <circle cx="207" cy="408" r="3.5" fill="#3B82F6"/>
+          <circle cx="285" cy="403" r="3.5" fill="#3B82F6"/>
+          <circle cx="325" cy="438" r="3.5" fill="#3B82F6"/>
+        </svg>
+
+        <!-- Floating data card -->
+        <div class="map-card">
+          <div class="map-card-head">
+            <div class="map-card-title">A38 — Birmingham City Centre</div>
+            <span class="crit-badge">CRITICAL</span>
+          </div>
+          <div class="map-card-meta">4 concurrent works · 87/100 risk score</div>
+          <div class="map-card-perms">
+            <span class="perm-chip">WG7/2025/04001234</span>
+            <span class="perm-chip">WG7/2025/04001891</span>
+            <span class="perm-chip">HE/2025/A38/0042</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== STATS ============== -->
+<section class="section stats-section">
+  <div class="wrap">
+    <div class="stats-head">
+      <div class="section-label">THE PROBLEM</div>
+    </div>
+    <div class="stats-row">
+      <div class="stat reveal">
+        <div class="stat-num" data-count="2.5M+">0</div>
+        <div class="stat-label">streetworks permits per year in England</div>
+        <div class="stat-sub">All available free via Street Manager open data</div>
+      </div>
+      <div class="stat reveal">
+        <div class="stat-num coral" data-count="60,000">0</div>
+        <div class="stat-label">accidental underground asset strikes annually</div>
+        <div class="stat-sub">Costing the UK economy £2.4 billion per year</div>
+      </div>
+      <div class="stat reveal">
+        <div class="stat-num mono" data-letter="Sept 2027"></div>
+        <div class="stat-label">when DfT's own cross-authority coordination lands</div>
+        <div class="stat-sub">Confirmed on the Street Manager public roadmap</div>
+      </div>
+    </div>
+    <p class="stats-paragraph">Highway authority officers make permit decisions every day without knowing what is happening on the same corridor two boroughs away. Street Manager has confirmed that native dashboards arrive March 2027, that cross-authority coordination is permanently out of scope, and that D-TRO integration won't land until September 2027. StreetSense AI fills that gap today.</p>
+    <p class="stats-source">Street Manager Public Roadmap, April 2026 update. National Underground Asset Register annual estimate (NUAR / DfT 2024).</p>
+  </div>
+</section>
+
+<!-- ============== CAPABILITIES ============== -->
+<section class="section caps-section">
+  <div class="wrap">
+    <div class="caps-head">
+      <div class="section-label">CAPABILITIES</div>
+      <h2 class="section-h">Three gaps in the UK roadworks stack — closed.</h2>
+    </div>
+    <div class="caps-grid">
+      <div class="cap-card">
+        <div class="cap-bar green"></div>
+        <div class="cap-body">
+          <div class="cap-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19 8 5"/><path d="M16 5l4 14"/><path d="M12 5v3"/><path d="M12 11v3"/><path d="M12 17v2"/></svg>
+          </div>
+          <h3 class="cap-title">Cross-authority corridor risk scoring</h3>
+          <p class="cap-text">Permit officers approve works every day without seeing what else is happening on the same corridor — across authority boundaries, across utility companies. StreetSense AI scores cumulative disruption impact in real time. The DfT's equivalent ("Flagging high impact works") is listed as Potential focus with no delivery date.</p>
+          <span class="status-badge amber">DfT Status: Potential focus · No date</span>
+        </div>
+      </div>
+
+      <div class="cap-card">
+        <div class="cap-bar slate"></div>
+        <div class="cap-body">
+          <div class="cap-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8L4 10l5.5 1.9L12 18l1.9-6.1L20 10l-6.2-1.2Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
+          </div>
+          <h3 class="cap-title">Plain-English AI copilot</h3>
+          <p class="cap-text">Network coordinators spend hours cross-referencing permits, traffic orders, and historical data to answer one question. Ask StreetSense AI in plain English — "What's happening on the A38 next month?" — and get a grounded answer with cited permit references. The DfT's alerting feature ("Where next") is scheduled for September 2027.</p>
+          <span class="status-badge amber">DfT Status: Phase 15 · September 2027</span>
+        </div>
+      </div>
+
+      <div class="cap-card">
+        <div class="cap-bar coral"></div>
+        <div class="cap-body">
+          <div class="cap-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/></svg>
+          </div>
+          <h3 class="cap-title">National non-compliance benchmarking</h3>
+          <p class="cap-text">Highway authorities have no visibility into how their permit promoters compare nationally. Which utility companies systematically overrun? Which generate the most FPN opportunities? StreetSense AI benchmarks all 1,800+ active promoters across England. Cross-authority coordination is explicitly out of scope for Street Manager.</p>
+          <span class="status-badge red">DfT Status: Out of scope — permanently</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== LIVE PREVIEW TABLE ============== -->
+<section class="section preview-section" id="map">
+  <div class="wrap">
+    <div class="preview-head">
+      <div class="section-label">LIVE PREVIEW</div>
+      <h2 class="section-h">Real data. Real corridors. Right now.</h2>
+    </div>
+    <div class="table-wrap">
+      <table class="corridors">
+        <thead>
+          <tr>
+            <th>Corridor</th>
+            <th>Authority</th>
+            <th>Works</th>
+            <th>Risk Score</th>
+            <th>Risk Level</th>
+            <th>Promoters</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="corridor-name">A38 — Birmingham</td>
+            <td class="col-auth">Birmingham CC</td>
+            <td class="col-num">4</td>
+            <td class="col-num">87</td>
+            <td><span class="risk-pill critical"><span class="dot"></span>CRITICAL</span></td>
+            <td class="col-prom">Cadent Gas, Sev Trent</td>
+          </tr>
+          <tr>
+            <td class="corridor-name">M42 Jn 3-4</td>
+            <td class="col-auth">Warwickshire CC</td>
+            <td class="col-num">3</td>
+            <td class="col-num">74</td>
+            <td><span class="risk-pill high"><span class="dot"></span>HIGH</span></td>
+            <td class="col-prom">National Highways</td>
+          </tr>
+          <tr>
+            <td class="corridor-name">A1 — Leeds North</td>
+            <td class="col-auth">Leeds CC</td>
+            <td class="col-num">3</td>
+            <td class="col-num">71</td>
+            <td><span class="risk-pill high"><span class="dot"></span>HIGH</span></td>
+            <td class="col-prom">BT Openreach, NGN</td>
+          </tr>
+          <tr>
+            <td class="corridor-name">A40 — Oxford</td>
+            <td class="col-auth">Oxfordshire CC</td>
+            <td class="col-num">2</td>
+            <td class="col-num">58</td>
+            <td><span class="risk-pill medium"><span class="dot"></span>MEDIUM</span></td>
+            <td class="col-prom">Thames Water</td>
+          </tr>
+          <tr>
+            <td class="corridor-name">A6 — Leicester</td>
+            <td class="col-auth">Leicester CC</td>
+            <td class="col-num">2</td>
+            <td class="col-num">44</td>
+            <td><span class="risk-pill medium"><span class="dot"></span>MEDIUM</span></td>
+            <td class="col-prom">East Midlands Gas</td>
+          </tr>
+          <tr>
+            <td class="corridor-name">A30 — Exeter</td>
+            <td class="col-auth">Devon CC</td>
+            <td class="col-num">1</td>
+            <td class="col-num">22</td>
+            <td><span class="risk-pill low"><span class="dot"></span>LOW</span></td>
+            <td class="col-prom">Openreach</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="table-note">Data indicative · Full live data available in the map application</div>
+  </div>
+</section>
+
+<!-- ============== DATA SOURCES ============== -->
+<section class="section sources-section" id="sources">
+  <div class="wrap">
+    <div class="sources-head">
+      <div class="section-label">BUILT ON OPEN DATA</div>
+      <h2 class="section-h">Every byte from verified government sources.</h2>
+    </div>
+    <div class="sources-grid">
+      <div class="source-card">
+        <span class="src-badge">DfT · Open Government Licence</span>
+        <h3 class="src-title">Street Manager</h3>
+        <p class="src-body">Every streetworks permit in England. Live event stream. API v7 released 27 April 2026. Free to access.</p>
+        <div class="src-foot">2.5M+ permits · Updated every 15 min</div>
+        <a class="src-link" href="https://manage-roadworks.service.gov.uk" target="_blank" rel="noopener">manage-roadworks.service.gov.uk</a>
+      </div>
+      <div class="source-card">
+        <span class="src-badge">Ordnance Survey · Free Tier</span>
+        <h3 class="src-title">OS Data Hub</h3>
+        <p class="src-body">National Street Gazetteer for USRN resolution. OS Open Roads for corridor classification. Vector tiles for road labels. 1M free transactions/month.</p>
+        <div class="src-foot">NSG · Open Roads · Vector Tiles</div>
+        <a class="src-link" href="https://osdatahub.os.uk" target="_blank" rel="noopener">osdatahub.os.uk</a>
+      </div>
+      <div class="source-card">
+        <span class="src-badge">Ordnance Survey · Public Beta</span>
+        <h3 class="src-title">National Underground Asset Register</h3>
+        <p class="src-body">Underground asset data from 350+ owners. 3 million km of buried pipes and cables. Public beta, user cap removed June 2025.</p>
+        <div class="src-foot">350+ asset owners · 3M km of assets</div>
+        <a class="src-link" href="https://nuar.uk" target="_blank" rel="noopener">nuar.uk</a>
+      </div>
+      <div class="source-card">
+        <span class="src-badge">DfT · Public Beta</span>
+        <h3 class="src-title">Digital Traffic Regulation Orders</h3>
+        <p class="src-body">All temporary and permanent traffic regulation orders across England. Public beta launched July 2025. Phase 6 integration planned.</p>
+        <div class="src-foot">Public beta · TRO + TTRO data</div>
+        <a class="src-link" href="https://dtro.dft.gov.uk" target="_blank" rel="noopener">dtro.dft.gov.uk</a>
+      </div>
+    </div>
+    <div class="attr-line">
+      All data used under Open Government Licence v3.0.<br>
+      Contains OS data © Crown copyright and database rights 2026.
+    </div>
+  </div>
+</section>
+
+<!-- ============== ROADMAP GAP ============== -->
+<section class="section roadmap-section" id="roadmap">
+  <div class="wrap">
+    <div class="roadmap-head">
+      <div class="section-label on-dark">THE CONTEXT</div>
+      <h2 class="section-h on-dark">We didn't invent this gap. The DfT published it.</h2>
+    </div>
+
+    <div class="roadmap-card">
+      <div class="roadmap-card-label">Source: Street Manager Public Roadmap, published by Department for Transport, last updated April 2026</div>
+
+      <div class="rm-row">
+        <div>
+          <div class="rm-title">Dashboards</div>
+          <div class="rm-sub">Native analytics within Street Manager UI</div>
+        </div>
+        <div class="rm-phase">Phase 14</div>
+        <span class="rm-date-badge">March 2027</span>
+      </div>
+
+      <div class="rm-row">
+        <div>
+          <div class="rm-title">Alerting — Where next</div>
+          <div class="rm-sub">Proactive network alerts and recommendations</div>
+        </div>
+        <div class="rm-phase">Phase 15</div>
+        <span class="rm-date-badge">September 2027</span>
+      </div>
+
+      <div class="rm-row">
+        <div>
+          <div class="rm-title">Digital Traffic Orders Integration</div>
+          <div class="rm-sub">Street Manager + D-TRO + NUAR unified view</div>
+        </div>
+        <div class="rm-phase">Phase 15</div>
+        <span class="rm-date-badge">September 2027</span>
+      </div>
+
+      <div class="rm-row red">
+        <div>
+          <div class="rm-title">Coordination</div>
+          <div class="rm-sub">Cross-authority coordination explicitly excluded</div>
+        </div>
+        <div class="rm-phase">OUT OF SCOPE</div>
+        <span class="rm-date-badge red">Never</span>
+      </div>
+    </div>
+
+    <div class="roadmap-paras">
+      <p>These are the Department for Transport's own commitments — published, documented, and dated. StreetSense AI exists in the gap between what Street Manager does today and what it will do in September 2027, and in the coordination space the roadmap explicitly excludes.</p>
+      <p>We're not competing with the DfT. We're closing a gap they've identified but not scheduled.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============== FINAL CTA ============== -->
+<section class="finalcta-section">
+  <div class="wrap">
+    <div class="final-pill">Public preview · No login required</div>
+    <h2 class="final-h">For the people who keep England moving.</h2>
+    <p class="final-sub">Open data. Open access. No login. No cost.</p>
+    <a href="#map" class="btn btn-final">Explore the map →</a>
+    <div class="final-stats">
+      <span>1,800+ active promoters in England</span>
+      <span class="sep">·</span>
+      <span>All A-roads and key B-roads</span>
+      <span class="sep">·</span>
+      <span>Refreshes from Street Manager open data</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============== FOOTER ============== -->
+<footer class="footer">
+  <div class="wrap">
+    <div class="foot-brand">
+      <span class="logo-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+      </span>
+      <span class="brand" style="color: white;">StreetSense<span class="ai">AI</span></span>
+    </div>
+    <div class="foot-tagline">Cross-Authority Roadworks Intelligence</div>
+    <div class="foot-live"><span class="green-dot"></span> Live · Street Manager v7</div>
+
+    <div class="foot-links">
+      <a href="#how">How it works</a>
+      <span class="sep">·</span>
+      <a href="#sources">Data sources</a>
+      <span class="sep">·</span>
+      <a href="#">View on GitHub</a>
+      <span class="sep">·</span>
+      <a href="#">Contact</a>
+    </div>
+
+    <div class="foot-attr">
+      Built independently in the UK · Not affiliated with the Department for Transport or Ordnance Survey · Open Government Licence v3.0 · Contains OS data © Crown copyright 2026
+    </div>
+  </div>
+</footer>
+
+<script>
+  // ----- Nav shadow on scroll -----
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 10) nav.classList.add('scrolled');
+    else nav.classList.remove('scrolled');
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  // ----- Reveal -----
+  const revealEls = document.querySelectorAll('.reveal');
+  const revealIO = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); revealIO.unobserve(e.target); } });
+  }, { threshold: 0.2 });
+  revealEls.forEach(el => revealIO.observe(el));
+
+  // ----- Stats count-up -----
+  const formatPermits = (v) => {
+    // 2.5M+ — animate decimal up to 2.5
+    return (v).toFixed(1).replace(/\.0$/, '') + 'M+';
+  };
+  const formatNumber = (v) => Math.round(v).toLocaleString('en-GB');
+
+  function animateCount(el, target, duration, formatter) {
+    const start = performance.now();
+    const tick = (now) => {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      el.textContent = formatter(target * eased);
+      if (t < 1) requestAnimationFrame(tick);
+      else el.textContent = formatter(target);
+    };
+    requestAnimationFrame(tick);
+  }
+
+  function animateLetters(el, text, perChar) {
+    el.textContent = '';
+    [...text].forEach((ch, i) => {
+      setTimeout(() => { el.textContent += ch; }, i * perChar);
+    });
+  }
+
+  const statIO = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      const el = e.target;
+      const raw = el.dataset.count;
+      const letter = el.dataset.letter;
+      if (raw === '2.5M+') {
+        animateCount(el, 2.5, 1400, formatPermits);
+      } else if (raw === '60,000') {
+        animateCount(el, 60000, 1600, formatNumber);
+      } else if (letter) {
+        animateLetters(el, letter, 90);
+      }
+      statIO.unobserve(el);
+    });
+  }, { threshold: 0.4 });
+
+  document.querySelectorAll('[data-count], [data-letter]').forEach(el => statIO.observe(el));
+</script>
+
+</body>
+</html>
