@@ -301,6 +301,44 @@ quality. Acceptable.
 
 ---
 
+## ADR-017 — shadcn CSS variable colors added alongside DESIGN.md tokens in tailwind.config.ts
+**Date:** 2026-05-09
+**Status:** Accepted
+
+**Context:** shadcn/ui components (Button, Card, Sheet, etc.) use Tailwind utilities like
+`bg-primary`, `bg-background`, `border-border`, `ring-ring` which require color definitions
+that map to CSS variables (e.g. `background: "hsl(var(--background))"`). Our DESIGN.md tokens
+use direct hex values. Both sets must coexist in `tailwind.config.ts`.
+
+**Decision:** `tailwind.config.ts` contains two color sections: (1) shadcn CSS variable mappings
+(`background`, `foreground`, `primary`, `secondary`, `border`, `ring`, etc.) using `hsl(var(--))`;
+(2) our DESIGN.md semantic tokens (`brand`, `risk`, `map`, `surface`, `line`, `ink`) using direct hex.
+The shadcn CSS variables in `:root` (globals.css) are set to HSL values derived from our hex tokens.
+
+**Consequences:** shadcn components work out of the box. Our custom components use the semantic
+tokens exclusively. Two sources of colour truth, but linked: CSS variables bridge them.
+Future token changes require updating both globals.css (HSL) and tailwind.config.ts (hex).
+
+---
+
+## ADR-018 — create-next-app scaffolded Next.js 16 and Tailwind v4; both downgraded
+**Date:** 2026-05-09
+**Status:** Accepted
+
+**Context:** `pnpm create next-app@latest` installed Next.js 16.2.6 and Tailwind v4.3.0
+(the latest at scaffolding time, May 2026). Both violate the locked stack (ADR-004: Tailwind
+v3.4.x; tech stack table: Next.js 15.x).
+
+**Decision:** Manually updated package.json to `next@^15.3.2` and `tailwindcss@^3.4.x`.
+Removed `@tailwindcss/postcss` (v4-specific). Added `postcss@^8` and `autoprefixer@^10`.
+Rewrote postcss.config.mjs to use the standard Tailwind v3 plugin format.
+
+**Consequences:** Installed versions are Next.js 15.5.18 and Tailwind 3.4.17 — matching
+the locked stack. pnpm build and TypeScript checks pass clean. Must re-verify on any
+`pnpm install` that could drift versions.
+
+---
+
 ## Template for New ADRs
 
 ```
@@ -319,4 +357,4 @@ quality. Acceptable.
 
 *DECISIONS.md is append-only. Never delete an ADR — supersede it.*
 *If a decision changes, add a new ADR and mark the old one "Superseded by ADR-NNN".*
-*Last updated: 2026-05-09 | 16 ADRs recorded*
+*Last updated: 2026-05-09 | 18 ADRs recorded*

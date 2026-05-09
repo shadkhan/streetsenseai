@@ -10,13 +10,18 @@
 
 ## This Week
 
-**Active module:** _(set this at the start of each week)_
+**Active module:** Pre-Phase Setup — monorepo scaffolding
 
 **Working on:**
-- [ ] _(add specific tasks here — e.g. "Wire up Street Manager SNS subscription")_
+- [x] Scaffold complete monorepo structure
+- [x] Next.js 15 + Tailwind v3.4.x + shadcn/ui frontend
+- [x] FastAPI Python backend with uv
+- [x] Docker Compose (PostgreSQL 16 + PostGIS, Redis 7)
+- [ ] Register for API keys (Street Manager, OS Data Hub, Mapbox, Anthropic)
+- [ ] Set up Railway + Vercel accounts
 
 **Blocked by:**
-- _(any external dependencies — API access, sign-ups, etc.)_
+- API key registrations (manual steps — developer must complete)
 
 ---
 
@@ -42,6 +47,12 @@
 - [ ] Uptime > 99% over 7-day rolling window
 
 ### Phase 1 Pre-Work (Do These First)
+- [x] Scaffold monorepo (Next.js 15, FastAPI, docker-compose)
+- [x] Tailwind v3.4.x design tokens configured — DESIGN.md Section 2.1
+- [x] shadcn/ui 17 components installed
+- [x] FastAPI skeleton with /health endpoint
+- [x] docker-compose.yml — PostgreSQL 16 + PostGIS + Redis 7
+- [x] .env.example committed (no real values)
 - [ ] Register for Anthropic API key
 - [ ] Register for Mapbox public token
 - [ ] Register for OS Data Hub account
@@ -177,6 +188,7 @@
 
 ```
 2026-05-09 — Created planning document, CLAUDE.md, DESIGN.md, ROADMAP.md, DECISIONS.md
+2026-05-09 — Monorepo scaffolded — Phase 1 ready for module work (Next.js 15, FastAPI, docker-compose, shadcn, design tokens)
 ```
 
 ---

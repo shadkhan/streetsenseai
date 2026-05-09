@@ -49,3 +49,11 @@ pnpm-debug.log*
 # Testing
 test-results/
 playwright-report/
+
+# Docs
+CLAUDE.md
+DECISIONS.md
+DESIGN.md
+ROADMAP.md
+StreetSense_AI_Planning_Document.docx
+/docs

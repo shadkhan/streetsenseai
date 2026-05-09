@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /*
+   * shadcn/ui CSS variables — values derived from DESIGN.md Section 2.1 tokens.
+   * HSL format required by shadcn component internals.
+   * These map our hex tokens to HSL so shadcn Button, Card, etc. use our palette.
+   */
+  :root {
+    --background:    0 0% 98%;          /* surface-page   #FAFAFA */
+    --foreground:    240 4% 10%;        /* ink             #18181B */
+
+    --card:          0 0% 100%;         /* surface-raised  #FFFFFF */
+    --card-foreground: 240 4% 10%;      /* ink             #18181B */
+
+    --popover:       0 0% 100%;         /* surface-raised  #FFFFFF */
+    --popover-foreground: 240 4% 10%;   /* ink             #18181B */
+
+    --primary:       214 52% 25%;       /* brand           #1E3A5F */
+    --primary-foreground: 0 0% 100%;    /* ink-inverse     #FFFFFF */
+
+    --secondary:     240 5% 96%;        /* surface-panel   #F4F4F5 */
+    --secondary-foreground: 240 4% 10%; /* ink             #18181B */
+
+    --muted:         240 5% 96%;        /* surface-panel   #F4F4F5 */
+    --muted-foreground: 240 3% 36%;     /* ink-muted       #52525B */
+
+    --accent:        214 52% 93%;       /* brand-light     #E8EEF5 */
+    --accent-foreground: 214 52% 25%;   /* brand           #1E3A5F */
+
+    --destructive:   0 72% 51%;         /* risk-critical   #DC2626 */
+    --destructive-foreground: 0 0% 100%; /* ink-inverse    #FFFFFF */
+
+    --border:        240 6% 90%;        /* line            #E4E4E7 */
+    --input:         240 6% 90%;        /* line            #E4E4E7 */
+    --ring:          214 52% 25%;       /* brand           #1E3A5F */
+
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}

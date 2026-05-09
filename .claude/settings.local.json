@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm create *)",
+      "Bash(pnpm install *)",
+      "Bash(node -e \"const p = require\\('./package.json'\\); console.log\\('next:', p.dependencies.next\\); console.log\\('tailwind:', p.devDependencies.tailwindcss\\);\")",
+      "Bash(pnpm add *)",
+      "Bash(npx shadcn@latest add badge button card command dialog dropdown-menu input label scroll-area select separator sheet skeleton switch table tabs tooltip --yes)",
+      "Bash(node -e \"console.log\\(require\\('./node_modules/next/package.json'\\).version\\)\")",
+      "Bash(npx tsc *)",
+      "Bash(pnpm build *)",
+      "Bash(mkdir -p D:/AI_Projects/ConstructionProjectAI/StreetSenseAI/apps/api)",
+      "Bash(uv init *)",
+      "Bash(uv add *)",
+      "Bash(docker-compose up *)",
+      "Bash(uv run *)",
+      "Bash(uv sync *)",
+      "Bash(UV_LINK_MODE=copy uv add --dev pytest pytest-asyncio mypy ruff httpx)",
+      "Bash(UV_LINK_MODE=copy uv sync)",
+      "Bash(docker compose *)",
+      "Bash(curl -s http://localhost:8000/health)",
+      "Bash(kill %1)"
+    ]
+  }
+}
