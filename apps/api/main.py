@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from routers import works, corridors, nuar, compliance, copilot
+from routers import compliance, copilot, corridors, nuar, webhooks, works
 
 app = FastAPI(
     title="StreetSense AI API",
@@ -22,6 +22,7 @@ app.include_router(corridors.router)
 app.include_router(nuar.router)
 app.include_router(compliance.router)
 app.include_router(copilot.router)
+app.include_router(webhooks.router)
 
 
 @app.get("/health")

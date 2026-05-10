@@ -60,6 +60,15 @@ export interface RiskFactor {
   description: string
 }
 
+// ── Road Info (SM-004) ───────────────────────────────────────
+export interface RoadInfo {
+  roadClassification: string         // "A Road", "B Road", "Motorway", "Unclassified"
+  roadFunction?: string
+  roadName?: string                  // "A38", "B4140", etc.
+  formOfWay?: string                 // "Single Carriageway", "Dual Carriageway", etc.
+  isPrimaryRoute: boolean            // true for Motorway or A Road
+}
+
 // ── NUAR (never persisted — query on demand only) ─────────────
 export interface NUARAsset {
   assetId: string

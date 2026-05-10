@@ -19,7 +19,14 @@
       "Bash(UV_LINK_MODE=copy uv sync)",
       "Bash(docker compose *)",
       "Bash(curl -s http://localhost:8000/health)",
-      "Bash(kill %1)"
+      "Bash(kill %1)",
+      "PowerShell(New-Item *)",
+      "PowerShell(powershell -Command \"& { Get-Command 'D:\\\\AI_Projects\\\\ConstructionProjectAI\\\\StreetSenseAI\\\\scripts\\\\dev.ps1' -ErrorAction Stop; Write-Host 'Script syntax OK' }\" 2>&1)",
+      "PowerShell(powershell -Command \"& { $null = [System.Management.Automation.Language.Parser]::ParseFile\\('D:\\\\AI_Projects\\\\ConstructionProjectAI\\\\StreetSenseAI\\\\scripts\\\\dev.ps1', [ref]$null, [ref]$errors\\); if \\($errors.Count -eq 0\\) { 'No parse errors' } else { $errors | ForEach-Object { $_.Message } } }\")",
+      "PowerShell(head *)",
+      "PowerShell(Set-Location \"D:\\\\AI_Projects\\\\ConstructionProjectAI\\\\StreetSenseAI\"; powershell -NonInteractive -Command \"& { . '.\\\\scripts\\\\dev.ps1'; Write-Host 'Loaded OK' }\" 2>&1 | Select-Object -First 10)",
+      "PowerShell(uv run *)",
+      "Bash(Get-ChildItem D:\\\\AI_Projects\\\\ConstructionProjectAI\\\\StreetSenseAI\\\\apps\\\\api\\\\routers *)"
     ]
   }
 }

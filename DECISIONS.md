@@ -339,6 +339,66 @@ the locked stack. pnpm build and TypeScript checks pass clean. Must re-verify on
 
 ---
 
+## ADR-019 — Street Manager delivers events via HTTP webhooks, not SNS/SQS
+**Date:** 2026-05-10
+**Status:** Accepted
+
+**Context:** Original design assumed SM Open Data used SNS/SQS for event
+delivery (common pattern for AWS-hosted government services). During SM
+Open Data onboarding the registration form asks for three HTTP endpoint
+URLs (permits, activities, section58) — SM POSTs JSON events directly to
+your server. SQS is not used by SM's open data programme.
+
+**Decision:** Primary ingestion path is HTTP webhooks via `routers/webhooks.py`
+(three POST endpoints at `/webhooks/permits`, `/webhooks/activities`,
+`/webhooks/section58`). SQSConsumer and the Celery Beat poll task are
+retained as a secondary delivery path and polling fallback (SM-005).
+
+**Consequences:** Requires a publicly accessible HTTPS URL for registration
+(ngrok in development, Railway in production). Webhook path is lower latency
+than SQS polling. SQS code remains as belt-and-suspenders — no wasted effort.
+
+---
+
+## ADR-020 — shapely added as geoalchemy2 companion for WKB reading
+**Date:** 2026-05-10
+**Status:** Accepted
+
+**Context:** geoalchemy2 returns geometry columns as `WKBElement` (raw
+Well-Known Binary). Converting WKB to Python geometry objects for domain
+model construction requires either raw binary parsing or a geometry library.
+geoalchemy2's `to_shape()` function requires shapely as a runtime dependency.
+
+**Decision:** Add `shapely` to pyproject.toml. Use `geoalchemy2.shape.to_shape()`
+for all WKB → Python geometry conversions in `works_repository.py`.
+
+**Consequences:** One additional dependency. Shapely is the standard Python
+geometry library — low risk, widely maintained. Enables clean `shape.geom_type`
+dispatch for Point vs LineString reconstruction.
+
+---
+
+## ADR-021 — Alembic uses asyncio + run_sync pattern for asyncpg compatibility
+**Date:** 2026-05-10
+**Status:** Accepted
+
+**Context:** SQLAlchemy is configured with asyncpg (async driver). Alembic's
+standard `env.py` uses synchronous connections. Running Alembic with an
+async engine directly causes `asyncpg` to fail because it cannot be called
+from a non-async context.
+
+**Decision:** `alembic/env.py` uses `async_engine_from_config()` with
+`asyncio.run()` wrapping the migration coroutine. Inside the coroutine,
+`connection.run_sync(do_run_migrations)` bridges back to Alembic's sync
+migration runner. `pool.NullPool` used to avoid connection leaks in migration
+runs.
+
+**Consequences:** Migrations and the app use the same database driver.
+`uv run alembic upgrade head` works reliably. Template pattern is reusable
+for all future migrations in this project.
+
+---
+
 ## Template for New ADRs
 
 ```
@@ -357,4 +417,4 @@ the locked stack. pnpm build and TypeScript checks pass clean. Must re-verify on
 
 *DECISIONS.md is append-only. Never delete an ADR — supersede it.*
 *If a decision changes, add a new ADR and mark the old one "Superseded by ADR-NNN".*
-*Last updated: 2026-05-09 | 18 ADRs recorded*
+*Last updated: 2026-05-10 | 21 ADRs recorded*

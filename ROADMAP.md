@@ -10,13 +10,16 @@
 
 ## This Week
 
-**Active module:** Pre-Phase Setup — monorepo scaffolding
+**Active module:** Phase 1 — SM-006 (FastAPI query endpoints)
 
 **Working on:**
 - [x] Scaffold complete monorepo structure
 - [x] Next.js 15 + Tailwind v3.4.x + shadcn/ui frontend
 - [x] FastAPI Python backend with uv
 - [x] Docker Compose (PostgreSQL 16 + PostGIS, Redis 7)
+- [x] SM-001: Street Manager webhook + SQS ingestion pipeline (19 tests)
+- [x] SM-002: PostgreSQL + PostGIS data store, works repository (32 tests)
+- [x] SM-003: USRN resolver via OS NSG API (15 tests)
 - [ ] Register for API keys (Street Manager, OS Data Hub, Mapbox, Anthropic)
 - [ ] Set up Railway + Vercel accounts
 
@@ -32,11 +35,11 @@
 ### Modules
 | ID | Module | Status | Blockers |
 |----|--------|--------|----------|
-| SM-001 | Street Manager Open Data stream subscriber (SNS/SQS) | ⚪ Not started | Street Manager API key needed |
-| SM-002 | PostgreSQL + PostGIS data store | ⚪ Not started | — |
-| SM-003 | USRN resolver via OS NSG / DataVia API | ⚪ Not started | OS API key needed |
-| SM-004 | Road classification via OS Open Roads | ⚪ Not started | — |
-| SM-005 | 15-minute polling fallback (Celery) | ⚪ Not started | Depends on SM-001 |
+| SM-001 | Street Manager Open Data stream subscriber (SNS/SQS) | 🟢 Done | — |
+| SM-002 | PostgreSQL + PostGIS data store | 🟢 Done | — |
+| SM-003 | USRN resolver via OS NSG / DataVia API | 🟢 Done | — |
+| SM-004 | Road classification via OS Open Roads | 🟢 Done | — |
+| SM-005 | 15-minute polling fallback (Celery) | 🟢 Done | — |
 | SM-006 | FastAPI query endpoints (USRN, bbox, date range) | ⚪ Not started | Depends on SM-002 |
 | SM-007 | Health dashboard endpoint | ⚪ Not started | Depends on SM-006 |
 
@@ -189,6 +192,11 @@
 ```
 2026-05-09 — Created planning document, CLAUDE.md, DESIGN.md, ROADMAP.md, DECISIONS.md
 2026-05-09 — Monorepo scaffolded — Phase 1 ready for module work (Next.js 15, FastAPI, docker-compose, shadcn, design tokens)
+2026-05-10 — SM-001 complete — StreetManagerClient (async, Redis cache, tenacity retry), SQSConsumer, HTTP webhooks router, Celery Beat task, 19 tests green
+2026-05-10 — SM-002 complete — StreetWork SQLAlchemy/PostGIS model, Alembic migration, works_repository (upsert/bbox/usrn), 32 tests green; ADRs 019-021 added
+2026-05-10 — SM-003 complete — USRNResolver (OS NSG API, indefinite Redis cache, injectable httpx), OSNSGResponse schemas, USRNInfo domain model, 15 tests green (47 total)
+2026-05-10 — SM-004 complete — RoadClassifier (OS Open Roads OGC Features API, 24h Redis cache, priority sort Motorway>A>B), RoadInfo domain model + TypeScript type, 19 tests green (66 total)
+2026-05-10 — SM-005 complete — poll_sm_rest Celery task (15min Beat, Redis cursor, _do_rest_poll extracted for testability), poll_sm_sqs tests added, 10 tests green (76 total)
 ```
 
 ---
