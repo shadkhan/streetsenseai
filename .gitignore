@@ -1,4 +1,5 @@
 # Dependencies
+.claude/
 node_modules/
 .pnpm-store/
 
