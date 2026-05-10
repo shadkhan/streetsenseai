@@ -192,11 +192,11 @@ def _error_response(status_code: int) -> MagicMock:
 
 # ── RoadClassifier.classify_by_usrn ───────────────────────────────────────────
 
-async def test_classify_no_api_key_returns_none(
+async def test_classify_no_client_id_returns_none(
     mock_redis: AsyncMock, mock_http: MagicMock
 ) -> None:
     with patch("services.road_classifier.settings") as s:
-        s.os_api_key = ""
+        s.os_client_id = ""
         classifier = RoadClassifier(mock_redis, mock_http)
         result = await classifier.classify_by_usrn("41507223", _POINT_GEO)
 
@@ -214,7 +214,7 @@ async def test_classify_cache_hit(mock_redis: AsyncMock, mock_http: MagicMock) -
     mock_redis.get = AsyncMock(return_value=cached.model_dump_json())
 
     with patch("services.road_classifier.settings") as s:
-        s.os_api_key = "test-key"
+        s.os_client_id = "test-id"
         classifier = RoadClassifier(mock_redis, mock_http)
         result = await classifier.classify_by_usrn("41507223", _POINT_GEO)
 
@@ -229,8 +229,9 @@ async def test_classify_cache_miss_calls_api_and_caches(
 ) -> None:
     mock_http.get = AsyncMock(return_value=_ok_response(_SAMPLE_COLLECTION))
 
-    with patch("services.road_classifier.settings") as s:
-        s.os_api_key = "os-key-xyz"
+    with patch("services.road_classifier.settings") as s, \
+         patch("services.road_classifier.get_os_token", AsyncMock(return_value="bearer-abc")):
+        s.os_client_id = "test-id"
         classifier = RoadClassifier(mock_redis, mock_http)
         result = await classifier.classify_by_usrn("41507223", _POINT_GEO)
 
@@ -240,7 +241,9 @@ async def test_classify_cache_miss_calls_api_and_caches(
     mock_http.get.assert_called_once()
     call_params = mock_http.get.call_args.kwargs["params"]
     assert "bbox" in call_params
-    assert call_params["key"] == "os-key-xyz"
+    assert "key" not in call_params
+    call_headers = mock_http.get.call_args.kwargs["headers"]
+    assert call_headers["Authorization"] == "Bearer bearer-abc"
 
     # Must be written to cache with a TTL
     mock_redis.set.assert_called_once()
@@ -256,8 +259,9 @@ async def test_classify_404_returns_none(
     r.status_code = 404
     mock_http.get = AsyncMock(return_value=r)
 
-    with patch("services.road_classifier.settings") as s:
-        s.os_api_key = "test-key"
+    with patch("services.road_classifier.settings") as s, \
+         patch("services.road_classifier.get_os_token", AsyncMock(return_value="tok")):
+        s.os_client_id = "test-id"
         classifier = RoadClassifier(mock_redis, mock_http)
         result = await classifier.classify_by_usrn("00000000", _POINT_GEO)
 
@@ -272,8 +276,9 @@ async def test_classify_empty_features_returns_none(
         return_value=_ok_response({"type": "FeatureCollection", "features": []})
     )
 
-    with patch("services.road_classifier.settings") as s:
-        s.os_api_key = "test-key"
+    with patch("services.road_classifier.settings") as s, \
+         patch("services.road_classifier.get_os_token", AsyncMock(return_value="tok")):
+        s.os_client_id = "test-id"
         classifier = RoadClassifier(mock_redis, mock_http)
         result = await classifier.classify_by_usrn("41507223", _POINT_GEO)
 
@@ -292,8 +297,9 @@ async def test_classify_linestring_geometry(
         return_value=_ok_response(_collection(_feature("B Road", name="B4140")))
     )
 
-    with patch("services.road_classifier.settings") as s:
-        s.os_api_key = "test-key"
+    with patch("services.road_classifier.settings") as s, \
+         patch("services.road_classifier.get_os_token", AsyncMock(return_value="tok")):
+        s.os_client_id = "test-id"
         classifier = RoadClassifier(mock_redis, mock_http)
         result = await classifier.classify_by_usrn("12345", line_geo)
 

@@ -18,6 +18,7 @@ from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponen
 from config import settings
 from schemas.domain import USRNInfo
 from schemas.os_api import OSNSGResponse
+from services.os_auth import get_os_token
 
 logger = logging.getLogger(__name__)
 
@@ -85,9 +86,9 @@ class USRNResolver:
             await self._http.aclose()
 
     async def resolve(self, usrn: str) -> USRNInfo | None:
-        """Resolve a single USRN. Returns None if not found or key not configured."""
-        if not settings.os_api_key:
-            logger.debug("OS_API_KEY not set — USRN resolution skipped for %s", usrn)
+        """Resolve a single USRN. Returns None if not found or credentials not configured."""
+        if not settings.os_client_id:
+            logger.debug("OS_CLIENT_ID not set — USRN resolution skipped for %s", usrn)
             return None
 
         cache_key = f"{_CACHE_PREFIX}{usrn}"
@@ -118,9 +119,13 @@ class USRNResolver:
     )
     async def _fetch(self, usrn: str) -> USRNInfo | None:
         assert self._http is not None
+        token = await get_os_token(self._redis, self._http)
+        if token is None:
+            return None
         response = await self._http.get(
             f"{_OS_NSG_BASE}/street",
-            params={"usrn": usrn, "key": settings.os_api_key},
+            params={"usrn": usrn},
+            headers={"Authorization": f"Bearer {token}"},
         )
         if response.status_code == 404:
             logger.debug("USRN %s not found in OS NSG", usrn)

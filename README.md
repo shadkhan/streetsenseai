@@ -57,13 +57,7 @@ Open http://localhost:3000
 ---
 
 ## Project Docs
-
-- [`CLAUDE.md`](./CLAUDE.md) — Claude Code instructions and architecture rules
-- [`DESIGN.md`](./DESIGN.md) — Design system, tokens, component patterns
-- [`ROADMAP.md`](./ROADMAP.md) — This-week status and phase tracker
-- [`DECISIONS.md`](./DECISIONS.md) — Architecture decision log (ADRs)
-- [`.phase`](./.phase) — Single-line file containing current phase number (1–6)
-- `StreetSense_AI_Planning_Document.docx` — Full product spec / PRD (in project root)
+Still in Devlopment
 
 ## Current Phase
 

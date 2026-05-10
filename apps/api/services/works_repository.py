@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import logging
 from datetime import date, datetime, timezone
+from typing import Any
 
 from geoalchemy2.elements import WKTElement
 from geoalchemy2.shape import to_shape
@@ -152,11 +153,17 @@ async def get_works_by_bbox(
     session: AsyncSession,
     bbox: tuple[float, float, float, float],
     statuses: list[str] | None = None,
+    from_date: date | None = None,
+    to_date: date | None = None,
+    limit: int = 100,
 ) -> list[StreetWork]:
-    """Fetch all works whose geometry intersects the given bounding box.
+    """Fetch works whose geometry intersects the given bounding box.
 
     bbox: (min_lon, min_lat, max_lon, max_lat) in WGS-84.
-    Optionally filter by status (e.g. ['granted', 'in_progress']).
+    from_date/to_date: inclusive date range filter — returns works whose
+      proposed dates overlap with [from_date, to_date] using the standard
+      interval overlap test (start <= to_date AND end >= from_date).
+    limit: max rows returned (default 100, caller-controlled for API endpoints).
     Used by SM-006 map query endpoints and Phase 2 corridor scoring.
     """
     min_lon, min_lat, max_lon, max_lat = bbox
@@ -166,16 +173,25 @@ async def get_works_by_bbox(
     )
     if statuses:
         stmt = stmt.where(StreetWorkRow.status.in_(statuses))
+    if from_date:
+        stmt = stmt.where(StreetWorkRow.proposed_end_date >= from_date)
+    if to_date:
+        stmt = stmt.where(StreetWorkRow.proposed_start_date <= to_date)
+    stmt = stmt.limit(limit)
 
     rows = (await session.execute(stmt)).scalars().all()
     return [_row_to_domain(row) for row in rows]
 
 
 async def get_works_by_usrn(
-    session: AsyncSession, usrn: str
+    session: AsyncSession,
+    usrn: str,
+    statuses: list[str] | None = None,
 ) -> list[StreetWork]:
     """Fetch all works on a specific street (USRN). Used by SM-003 and copilot."""
     stmt = select(StreetWorkRow).where(StreetWorkRow.usrn == usrn)
+    if statuses:
+        stmt = stmt.where(StreetWorkRow.status.in_(statuses))
     rows = (await session.execute(stmt)).scalars().all()
     return [_row_to_domain(row) for row in rows]
 

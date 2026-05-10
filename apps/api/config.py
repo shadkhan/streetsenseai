@@ -29,8 +29,9 @@ class Settings(BaseSettings):
     # Anthropic
     anthropic_api_key: str = ""
 
-    # OS Data Hub
-    os_api_key: str = ""
+    # OS Data Hub (OAuth 2.0 client credentials — Project ID / Project Secret)
+    os_client_id: str = ""
+    os_client_secret: str = ""
 
     # Mapbox (read by frontend; backend may need for geocoding fallback)
     next_public_mapbox_token: str = ""

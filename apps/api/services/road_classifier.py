@@ -20,6 +20,7 @@ from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponen
 from config import settings
 from schemas.domain import LineStringGeometry, PointGeometry, RoadInfo
 from schemas.os_api import OSOpenRoadsCollection
+from services.os_auth import get_os_token
 
 logger = logging.getLogger(__name__)
 
@@ -136,8 +137,8 @@ class RoadClassifier:
         geometry: PointGeometry | LineStringGeometry,
     ) -> RoadInfo | None:
         """Return road classification for a USRN, fetching via geometry on cache miss."""
-        if not settings.os_api_key:
-            logger.debug("OS_API_KEY not set — road classification skipped for USRN %s", usrn)
+        if not settings.os_client_id:
+            logger.debug("OS_CLIENT_ID not set — road classification skipped for USRN %s", usrn)
             return None
 
         cache_key = f"{_CACHE_PREFIX}{usrn}"
@@ -161,6 +162,9 @@ class RoadClassifier:
         geometry: PointGeometry | LineStringGeometry,
     ) -> RoadInfo | None:
         assert self._http is not None
+        token = await get_os_token(self._redis, self._http)
+        if token is None:
+            return None
         min_lon, min_lat, max_lon, max_lat = _geometry_bbox(geometry)
 
         response = await self._http.get(
@@ -169,8 +173,8 @@ class RoadClassifier:
                 "bbox": f"{min_lon},{min_lat},{max_lon},{max_lat}",
                 "bbox-crs": _BBOX_CRS,
                 "limit": 10,
-                "key": settings.os_api_key,
             },
+            headers={"Authorization": f"Bearer {token}"},
         )
         if response.status_code == 404:
             return None

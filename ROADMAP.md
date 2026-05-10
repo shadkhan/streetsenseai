@@ -10,7 +10,7 @@
 
 ## This Week
 
-**Active module:** Phase 1 — SM-006 (FastAPI query endpoints)
+**Active module:** Phase 1 — SM-007 (health dashboard endpoint)
 
 **Working on:**
 - [x] Scaffold complete monorepo structure
@@ -40,7 +40,7 @@
 | SM-003 | USRN resolver via OS NSG / DataVia API | 🟢 Done | — |
 | SM-004 | Road classification via OS Open Roads | 🟢 Done | — |
 | SM-005 | 15-minute polling fallback (Celery) | 🟢 Done | — |
-| SM-006 | FastAPI query endpoints (USRN, bbox, date range) | ⚪ Not started | Depends on SM-002 |
+| SM-006 | FastAPI query endpoints (USRN, bbox, date range) | 🟢 Done | — |
 | SM-007 | Health dashboard endpoint | ⚪ Not started | Depends on SM-006 |
 
 ### Phase 1 Success Criteria
@@ -197,6 +197,8 @@
 2026-05-10 — SM-003 complete — USRNResolver (OS NSG API, indefinite Redis cache, injectable httpx), OSNSGResponse schemas, USRNInfo domain model, 15 tests green (47 total)
 2026-05-10 — SM-004 complete — RoadClassifier (OS Open Roads OGC Features API, 24h Redis cache, priority sort Motorway>A>B), RoadInfo domain model + TypeScript type, 19 tests green (66 total)
 2026-05-10 — SM-005 complete — poll_sm_rest Celery task (15min Beat, Redis cursor, _do_rest_poll extracted for testability), poll_sm_sqs tests added, 10 tests green (76 total)
+2026-05-10 — SM-006 complete — works router (/permit/:path, /bbox, /usrn, /authority), date range + limit added to get_works_by_bbox, camelCase verified, 15 tests green (91 total)
+2026-05-10 — OS Data Hub OAuth migration — os_api_key replaced by os_client_id/os_client_secret, services/os_auth.py token manager (Redis-cached, 5 min buffer), all services updated to Bearer auth, 9 new tests (100 total)
 ```
 
 ---

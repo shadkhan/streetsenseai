@@ -193,11 +193,11 @@ def _error_response(status_code: int) -> MagicMock:
 
 # ── USRNResolver.resolve ───────────────────────────────────────────────────────
 
-async def test_resolve_returns_none_when_no_api_key(
+async def test_resolve_returns_none_when_no_client_id(
     mock_redis: AsyncMock, mock_http: MagicMock
 ) -> None:
     with patch("services.usrn_resolver.settings") as s:
-        s.os_api_key = ""
+        s.os_client_id = ""
         resolver = USRNResolver(mock_redis, mock_http)
         result = await resolver.resolve("41507223")
 
@@ -216,7 +216,7 @@ async def test_resolve_cache_hit(mock_redis: AsyncMock, mock_http: MagicMock) ->
     mock_redis.get = AsyncMock(return_value=info.model_dump_json())
 
     with patch("services.usrn_resolver.settings") as s:
-        s.os_api_key = "test-key"
+        s.os_client_id = "test-id"
         resolver = USRNResolver(mock_redis, mock_http)
         result = await resolver.resolve("41507223")
 
@@ -231,8 +231,9 @@ async def test_resolve_cache_miss_hits_api_and_caches(
 ) -> None:
     mock_http.get = AsyncMock(return_value=_ok_response(_SAMPLE_NSG_RESPONSE))
 
-    with patch("services.usrn_resolver.settings") as s:
-        s.os_api_key = "os-key-123"
+    with patch("services.usrn_resolver.settings") as s, \
+         patch("services.usrn_resolver.get_os_token", AsyncMock(return_value="bearer-xyz")):
+        s.os_client_id = "test-id"
         resolver = USRNResolver(mock_redis, mock_http)
         result = await resolver.resolve("41507223")
 
@@ -240,10 +241,12 @@ async def test_resolve_cache_miss_hits_api_and_caches(
     assert result.street_name == "Corporation Street"
     assert result.road_classification == "B"
 
-    # Verify API was called with correct params
+    # Verify API was called with correct params and Bearer auth
     mock_http.get.assert_called_once()
     call_kwargs = mock_http.get.call_args
-    assert "usrn" in call_kwargs.kwargs.get("params", {}) or "41507223" in str(call_kwargs)
+    assert call_kwargs.kwargs.get("params", {}).get("usrn") == "41507223"
+    assert call_kwargs.kwargs.get("headers", {}).get("Authorization") == "Bearer bearer-xyz"
+    assert "key" not in call_kwargs.kwargs.get("params", {})
 
     # Verify result was written to cache with no TTL
     mock_redis.set.assert_called_once()
@@ -259,8 +262,9 @@ async def test_resolve_404_returns_none(
     r.status_code = 404
     mock_http.get = AsyncMock(return_value=r)
 
-    with patch("services.usrn_resolver.settings") as s:
-        s.os_api_key = "test-key"
+    with patch("services.usrn_resolver.settings") as s, \
+         patch("services.usrn_resolver.get_os_token", AsyncMock(return_value="tok")):
+        s.os_client_id = "test-id"
         resolver = USRNResolver(mock_redis, mock_http)
         result = await resolver.resolve("00000000")
 
@@ -275,8 +279,9 @@ async def test_resolve_empty_results_returns_none(
         return_value=_ok_response({"header": {"totalresults": 0}, "results": []})
     )
 
-    with patch("services.usrn_resolver.settings") as s:
-        s.os_api_key = "test-key"
+    with patch("services.usrn_resolver.settings") as s, \
+         patch("services.usrn_resolver.get_os_token", AsyncMock(return_value="tok")):
+        s.os_client_id = "test-id"
         resolver = USRNResolver(mock_redis, mock_http)
         result = await resolver.resolve("41507223")
 
@@ -296,8 +301,9 @@ async def test_batch_resolve_returns_successful_usrns(
     # First USRN found, second not found
     mock_http.get = AsyncMock(side_effect=[good_response, not_found])
 
-    with patch("services.usrn_resolver.settings") as s:
-        s.os_api_key = "test-key"
+    with patch("services.usrn_resolver.settings") as s, \
+         patch("services.usrn_resolver.get_os_token", AsyncMock(return_value="tok")):
+        s.os_client_id = "test-id"
         resolver = USRNResolver(mock_redis, mock_http)
         results = await resolver.batch_resolve(["41507223", "00000000"])
 
@@ -310,7 +316,7 @@ async def test_batch_resolve_empty_list(
     mock_redis: AsyncMock, mock_http: MagicMock
 ) -> None:
     with patch("services.usrn_resolver.settings") as s:
-        s.os_api_key = "test-key"
+        s.os_client_id = "test-id"
         resolver = USRNResolver(mock_redis, mock_http)
         results = await resolver.batch_resolve([])
 
