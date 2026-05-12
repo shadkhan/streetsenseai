@@ -1,0 +1,74 @@
+[
+  {
+    "name": "Minor works",
+    "minDays": 1,
+    "maxDays": 3,
+    "typicalTrafficManagement": "Stop and go boards",
+    "typicalRestrictionType": "Lane closure",
+    "relativeFrequencyWeight": 3.5,
+    "promoterTypeAffinity": ["gas", "telecoms", "water", "electric"]
+  },
+  {
+    "name": "Standard works",
+    "minDays": 4,
+    "maxDays": 10,
+    "typicalTrafficManagement": "Two-way signals",
+    "typicalRestrictionType": "Lane closure",
+    "relativeFrequencyWeight": 3.0,
+    "promoterTypeAffinity": ["gas", "water", "electric", "highway", "telecoms"]
+  },
+  {
+    "name": "Major works",
+    "minDays": 11,
+    "maxDays": 90,
+    "typicalTrafficManagement": "Multi-way signals",
+    "typicalRestrictionType": "Road closure",
+    "relativeFrequencyWeight": 1.2,
+    "promoterTypeAffinity": ["highway", "water", "gas", "electric"]
+  },
+  {
+    "name": "Immediate – emergency",
+    "minDays": 1,
+    "maxDays": 2,
+    "typicalTrafficManagement": "Stop and go boards",
+    "typicalRestrictionType": "Lane closure",
+    "relativeFrequencyWeight": 0.5,
+    "promoterTypeAffinity": ["gas", "water", "electric", "telecoms"]
+  },
+  {
+    "name": "Immediate – urgent",
+    "minDays": 1,
+    "maxDays": 3,
+    "typicalTrafficManagement": "Stop and go boards",
+    "typicalRestrictionType": "Footway closure",
+    "relativeFrequencyWeight": 0.7,
+    "promoterTypeAffinity": ["gas", "water", "electric", "telecoms"]
+  },
+  {
+    "name": "Section 50 (road opening licence)",
+    "minDays": 5,
+    "maxDays": 30,
+    "typicalTrafficManagement": "Two-way signals",
+    "typicalRestrictionType": "Carriageway restriction",
+    "relativeFrequencyWeight": 0.8,
+    "promoterTypeAffinity": ["highway", "water", "gas"]
+  },
+  {
+    "name": "Section 58 (highway maintenance)",
+    "minDays": 3,
+    "maxDays": 14,
+    "typicalTrafficManagement": "No traffic management",
+    "typicalRestrictionType": "Lane closure",
+    "relativeFrequencyWeight": 0.6,
+    "promoterTypeAffinity": ["highway"]
+  },
+  {
+    "name": "HS2 highway works",
+    "minDays": 30,
+    "maxDays": 180,
+    "typicalTrafficManagement": "Traffic free zone",
+    "typicalRestrictionType": "Road closure",
+    "relativeFrequencyWeight": 0.1,
+    "promoterTypeAffinity": ["highway"]
+  }
+]

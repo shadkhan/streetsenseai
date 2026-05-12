@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from collections.abc import AsyncGenerator
 
+import redis.asyncio as aioredis
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,
@@ -40,3 +41,12 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """FastAPI dependency — yields a scoped AsyncSession per request."""
     async with async_session_factory() as session:
         yield session
+
+
+async def get_redis() -> AsyncGenerator[aioredis.Redis, None]:
+    """FastAPI dependency — yields a Redis client, closed on teardown."""
+    r: aioredis.Redis = aioredis.from_url(settings.redis_url)
+    try:
+        yield r
+    finally:
+        await r.aclose()

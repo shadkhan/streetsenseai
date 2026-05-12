@@ -1,0 +1,415 @@
+[
+  {
+    "name": "Cadent Gas Ltd",
+    "licenceNumber": "WG1",
+    "type": "gas",
+    "relativeWorkVolumeWeight": 4.5,
+    "reliabilityScore": 0.82
+  },
+  {
+    "name": "SGN (Southern Gas Networks)",
+    "licenceNumber": "SGN",
+    "type": "gas",
+    "relativeWorkVolumeWeight": 3.2,
+    "reliabilityScore": 0.85
+  },
+  {
+    "name": "Northern Gas Networks",
+    "licenceNumber": "NGN",
+    "type": "gas",
+    "relativeWorkVolumeWeight": 2.8,
+    "reliabilityScore": 0.80
+  },
+  {
+    "name": "Wales and West Utilities",
+    "licenceNumber": "WWU",
+    "type": "gas",
+    "relativeWorkVolumeWeight": 2.1,
+    "reliabilityScore": 0.83
+  },
+  {
+    "name": "National Grid Gas Transmission",
+    "licenceNumber": "NGG",
+    "type": "gas",
+    "relativeWorkVolumeWeight": 1.2,
+    "reliabilityScore": 0.88
+  },
+  {
+    "name": "BT Openreach",
+    "licenceNumber": "BTO",
+    "type": "telecoms",
+    "relativeWorkVolumeWeight": 5.5,
+    "reliabilityScore": 0.72
+  },
+  {
+    "name": "Virgin Media O2",
+    "licenceNumber": "VMO",
+    "type": "telecoms",
+    "relativeWorkVolumeWeight": 4.0,
+    "reliabilityScore": 0.70
+  },
+  {
+    "name": "CityFibre Networks",
+    "licenceNumber": "CFN",
+    "type": "telecoms",
+    "relativeWorkVolumeWeight": 3.5,
+    "reliabilityScore": 0.76
+  },
+  {
+    "name": "Gigaclear",
+    "licenceNumber": "GIG",
+    "type": "telecoms",
+    "relativeWorkVolumeWeight": 1.5,
+    "reliabilityScore": 0.74
+  },
+  {
+    "name": "Hyperoptic Ltd",
+    "licenceNumber": "HYP",
+    "type": "telecoms",
+    "relativeWorkVolumeWeight": 1.8,
+    "reliabilityScore": 0.78
+  },
+  {
+    "name": "Community Fibre",
+    "licenceNumber": "CMF",
+    "type": "telecoms",
+    "relativeWorkVolumeWeight": 1.6,
+    "reliabilityScore": 0.75
+  },
+  {
+    "name": "G.Network",
+    "licenceNumber": "GNE",
+    "type": "telecoms",
+    "relativeWorkVolumeWeight": 1.2,
+    "reliabilityScore": 0.77
+  },
+  {
+    "name": "Full Fibre Ltd",
+    "licenceNumber": "FFL",
+    "type": "telecoms",
+    "relativeWorkVolumeWeight": 1.0,
+    "reliabilityScore": 0.73
+  },
+  {
+    "name": "Toob Ltd",
+    "licenceNumber": "TOB",
+    "type": "telecoms",
+    "relativeWorkVolumeWeight": 0.8,
+    "reliabilityScore": 0.79
+  },
+  {
+    "name": "ITS Technology Group",
+    "licenceNumber": "ITS",
+    "type": "telecoms",
+    "relativeWorkVolumeWeight": 0.7,
+    "reliabilityScore": 0.81
+  },
+  {
+    "name": "Zayo Group",
+    "licenceNumber": "ZYO",
+    "type": "telecoms",
+    "relativeWorkVolumeWeight": 0.6,
+    "reliabilityScore": 0.84
+  },
+  {
+    "name": "EE (BT Group)",
+    "licenceNumber": "EEB",
+    "type": "telecoms",
+    "relativeWorkVolumeWeight": 1.1,
+    "reliabilityScore": 0.77
+  },
+  {
+    "name": "TalkTalk Telecom",
+    "licenceNumber": "TTK",
+    "type": "telecoms",
+    "relativeWorkVolumeWeight": 0.9,
+    "reliabilityScore": 0.71
+  },
+  {
+    "name": "Thames Water",
+    "licenceNumber": "TWA",
+    "type": "water",
+    "relativeWorkVolumeWeight": 3.8,
+    "reliabilityScore": 0.77
+  },
+  {
+    "name": "Severn Trent Water",
+    "licenceNumber": "STW",
+    "type": "water",
+    "relativeWorkVolumeWeight": 3.2,
+    "reliabilityScore": 0.79
+  },
+  {
+    "name": "Anglian Water",
+    "licenceNumber": "AWA",
+    "type": "water",
+    "relativeWorkVolumeWeight": 2.6,
+    "reliabilityScore": 0.82
+  },
+  {
+    "name": "Yorkshire Water",
+    "licenceNumber": "YWA",
+    "type": "water",
+    "relativeWorkVolumeWeight": 2.4,
+    "reliabilityScore": 0.80
+  },
+  {
+    "name": "United Utilities",
+    "licenceNumber": "UUW",
+    "type": "water",
+    "relativeWorkVolumeWeight": 2.8,
+    "reliabilityScore": 0.81
+  },
+  {
+    "name": "Northumbrian Water",
+    "licenceNumber": "NWA",
+    "type": "water",
+    "relativeWorkVolumeWeight": 1.8,
+    "reliabilityScore": 0.83
+  },
+  {
+    "name": "Southern Water",
+    "licenceNumber": "SWA",
+    "type": "water",
+    "relativeWorkVolumeWeight": 1.6,
+    "reliabilityScore": 0.75
+  },
+  {
+    "name": "South West Water",
+    "licenceNumber": "SWW",
+    "type": "water",
+    "relativeWorkVolumeWeight": 1.4,
+    "reliabilityScore": 0.78
+  },
+  {
+    "name": "Affinity Water",
+    "licenceNumber": "AFW",
+    "type": "water",
+    "relativeWorkVolumeWeight": 1.2,
+    "reliabilityScore": 0.80
+  },
+  {
+    "name": "Bristol Water",
+    "licenceNumber": "BWA",
+    "type": "water",
+    "relativeWorkVolumeWeight": 0.8,
+    "reliabilityScore": 0.82
+  },
+  {
+    "name": "Portsmouth Water",
+    "licenceNumber": "PWA",
+    "type": "water",
+    "relativeWorkVolumeWeight": 0.5,
+    "reliabilityScore": 0.84
+  },
+  {
+    "name": "UK Power Networks",
+    "licenceNumber": "UKP",
+    "type": "electric",
+    "relativeWorkVolumeWeight": 3.2,
+    "reliabilityScore": 0.83
+  },
+  {
+    "name": "Western Power Distribution",
+    "licenceNumber": "WPD",
+    "type": "electric",
+    "relativeWorkVolumeWeight": 3.0,
+    "reliabilityScore": 0.85
+  },
+  {
+    "name": "Northern Powergrid",
+    "licenceNumber": "NPG",
+    "type": "electric",
+    "relativeWorkVolumeWeight": 2.6,
+    "reliabilityScore": 0.84
+  },
+  {
+    "name": "SP Energy Networks",
+    "licenceNumber": "SPE",
+    "type": "electric",
+    "relativeWorkVolumeWeight": 1.8,
+    "reliabilityScore": 0.83
+  },
+  {
+    "name": "National Grid Electricity Transmission",
+    "licenceNumber": "NGE",
+    "type": "electric",
+    "relativeWorkVolumeWeight": 1.4,
+    "reliabilityScore": 0.87
+  },
+  {
+    "name": "Scottish and Southern Electricity Networks",
+    "licenceNumber": "SSE",
+    "type": "electric",
+    "relativeWorkVolumeWeight": 1.6,
+    "reliabilityScore": 0.86
+  },
+  {
+    "name": "E.ON Next Energy",
+    "licenceNumber": "EON",
+    "type": "electric",
+    "relativeWorkVolumeWeight": 0.9,
+    "reliabilityScore": 0.81
+  },
+  {
+    "name": "EDF Energy Networks",
+    "licenceNumber": "EDF",
+    "type": "electric",
+    "relativeWorkVolumeWeight": 1.1,
+    "reliabilityScore": 0.82
+  },
+  {
+    "name": "National Highways",
+    "licenceNumber": "NHW",
+    "type": "highway",
+    "relativeWorkVolumeWeight": 3.0,
+    "reliabilityScore": 0.90
+  },
+  {
+    "name": "Kier Highways",
+    "licenceNumber": "KHW",
+    "type": "highway",
+    "relativeWorkVolumeWeight": 2.2,
+    "reliabilityScore": 0.84
+  },
+  {
+    "name": "Balfour Beatty Highways",
+    "licenceNumber": "BBH",
+    "type": "highway",
+    "relativeWorkVolumeWeight": 2.0,
+    "reliabilityScore": 0.85
+  },
+  {
+    "name": "Amey plc",
+    "licenceNumber": "AMY",
+    "type": "highway",
+    "relativeWorkVolumeWeight": 1.8,
+    "reliabilityScore": 0.83
+  },
+  {
+    "name": "Ringway Infrastructure Services",
+    "licenceNumber": "RIS",
+    "type": "highway",
+    "relativeWorkVolumeWeight": 1.5,
+    "reliabilityScore": 0.82
+  },
+  {
+    "name": "Skanska Civil Engineering",
+    "licenceNumber": "SKA",
+    "type": "highway",
+    "relativeWorkVolumeWeight": 1.2,
+    "reliabilityScore": 0.86
+  },
+  {
+    "name": "Tarmac",
+    "licenceNumber": "TAR",
+    "type": "highway",
+    "relativeWorkVolumeWeight": 1.4,
+    "reliabilityScore": 0.84
+  },
+  {
+    "name": "Colas Ltd",
+    "licenceNumber": "COL",
+    "type": "highway",
+    "relativeWorkVolumeWeight": 1.3,
+    "reliabilityScore": 0.83
+  },
+  {
+    "name": "Morrisons Utility Services",
+    "licenceNumber": "MUS",
+    "type": "highway",
+    "relativeWorkVolumeWeight": 1.6,
+    "reliabilityScore": 0.78
+  },
+  {
+    "name": "Clancy Docwra",
+    "licenceNumber": "CDW",
+    "type": "highway",
+    "relativeWorkVolumeWeight": 1.4,
+    "reliabilityScore": 0.77
+  },
+  {
+    "name": "Network Plus Services",
+    "licenceNumber": "NPS",
+    "type": "highway",
+    "relativeWorkVolumeWeight": 1.2,
+    "reliabilityScore": 0.79
+  },
+  {
+    "name": "Lanes Group",
+    "licenceNumber": "LAN",
+    "type": "highway",
+    "relativeWorkVolumeWeight": 1.0,
+    "reliabilityScore": 0.76
+  },
+  {
+    "name": "Sapphire Utility Solutions",
+    "licenceNumber": "SUS",
+    "type": "highway",
+    "relativeWorkVolumeWeight": 0.8,
+    "reliabilityScore": 0.80
+  },
+  {
+    "name": "Farrans Construction",
+    "licenceNumber": "FAR",
+    "type": "highway",
+    "relativeWorkVolumeWeight": 0.7,
+    "reliabilityScore": 0.85
+  },
+  {
+    "name": "G's Group Services",
+    "licenceNumber": "GGS",
+    "type": "highway",
+    "relativeWorkVolumeWeight": 0.6,
+    "reliabilityScore": 0.78
+  },
+  {
+    "name": "Swires Group",
+    "licenceNumber": "SWG",
+    "type": "highway",
+    "relativeWorkVolumeWeight": 0.5,
+    "reliabilityScore": 0.77
+  },
+  {
+    "name": "Birmingham City Council Highways",
+    "licenceNumber": "BCC",
+    "type": "highway",
+    "relativeWorkVolumeWeight": 2.5,
+    "reliabilityScore": 0.88
+  },
+  {
+    "name": "Leeds City Council Highways",
+    "licenceNumber": "LCC",
+    "type": "highway",
+    "relativeWorkVolumeWeight": 2.0,
+    "reliabilityScore": 0.87
+  },
+  {
+    "name": "Manchester City Council Highways",
+    "licenceNumber": "MCC",
+    "type": "highway",
+    "relativeWorkVolumeWeight": 1.9,
+    "reliabilityScore": 0.87
+  },
+  {
+    "name": "Sheffield City Council Highways",
+    "licenceNumber": "SCC",
+    "type": "highway",
+    "relativeWorkVolumeWeight": 1.6,
+    "reliabilityScore": 0.86
+  },
+  {
+    "name": "Scottish Power Renewables",
+    "licenceNumber": "SPR",
+    "type": "electric",
+    "relativeWorkVolumeWeight": 0.7,
+    "reliabilityScore": 0.82
+  },
+  {
+    "name": "Vodafone UK",
+    "licenceNumber": "VFN",
+    "type": "telecoms",
+    "relativeWorkVolumeWeight": 0.8,
+    "reliabilityScore": 0.79
+  }
+]

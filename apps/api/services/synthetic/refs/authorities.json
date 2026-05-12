@@ -1,0 +1,330 @@
+[
+  {
+    "name": "Transport for London",
+    "regionCode": "LON",
+    "approxBboxCentre": [-0.1276, 51.5074],
+    "approxBboxRadius": 0.25,
+    "usrnPrefix": "5990",
+    "relativeWorkVolumeWeight": 5.0
+  },
+  {
+    "name": "Birmingham City Council",
+    "regionCode": "WMC",
+    "approxBboxCentre": [-1.8998, 52.4797],
+    "approxBboxRadius": 0.12,
+    "usrnPrefix": "4150",
+    "relativeWorkVolumeWeight": 3.2
+  },
+  {
+    "name": "Manchester City Council",
+    "regionCode": "GMCA",
+    "approxBboxCentre": [-2.2374, 53.4808],
+    "approxBboxRadius": 0.10,
+    "usrnPrefix": "4280",
+    "relativeWorkVolumeWeight": 2.8
+  },
+  {
+    "name": "Leeds City Council",
+    "regionCode": "WYCA",
+    "approxBboxCentre": [-1.5491, 53.8008],
+    "approxBboxRadius": 0.14,
+    "usrnPrefix": "4720",
+    "relativeWorkVolumeWeight": 2.5
+  },
+  {
+    "name": "Liverpool City Council",
+    "regionCode": "LCRCA",
+    "approxBboxCentre": [-2.9916, 53.4084],
+    "approxBboxRadius": 0.10,
+    "usrnPrefix": "4240",
+    "relativeWorkVolumeWeight": 2.2
+  },
+  {
+    "name": "Sheffield City Council",
+    "regionCode": "SCR",
+    "approxBboxCentre": [-1.4701, 53.3811],
+    "approxBboxRadius": 0.12,
+    "usrnPrefix": "4460",
+    "relativeWorkVolumeWeight": 2.0
+  },
+  {
+    "name": "Bristol City Council",
+    "regionCode": "WECA",
+    "approxBboxCentre": [-2.5879, 51.4545],
+    "approxBboxRadius": 0.10,
+    "usrnPrefix": "1145",
+    "relativeWorkVolumeWeight": 1.9
+  },
+  {
+    "name": "Newcastle upon Tyne City Council",
+    "regionCode": "NECA",
+    "approxBboxCentre": [-1.6178, 54.9783],
+    "approxBboxRadius": 0.10,
+    "usrnPrefix": "4520",
+    "relativeWorkVolumeWeight": 1.7
+  },
+  {
+    "name": "Nottingham City Council",
+    "regionCode": "EMC",
+    "approxBboxCentre": [-1.1496, 52.9548],
+    "approxBboxRadius": 0.09,
+    "usrnPrefix": "3190",
+    "relativeWorkVolumeWeight": 1.6
+  },
+  {
+    "name": "Leicester City Council",
+    "regionCode": "EMC",
+    "approxBboxCentre": [-1.1308, 52.6369],
+    "approxBboxRadius": 0.09,
+    "usrnPrefix": "2400",
+    "relativeWorkVolumeWeight": 1.6
+  },
+  {
+    "name": "Coventry City Council",
+    "regionCode": "WMC",
+    "approxBboxCentre": [-1.5197, 52.4068],
+    "approxBboxRadius": 0.10,
+    "usrnPrefix": "2285",
+    "relativeWorkVolumeWeight": 1.5
+  },
+  {
+    "name": "Bradford Council",
+    "regionCode": "WYCA",
+    "approxBboxCentre": [-1.7597, 53.7960],
+    "approxBboxRadius": 0.12,
+    "usrnPrefix": "4700",
+    "relativeWorkVolumeWeight": 1.5
+  },
+  {
+    "name": "Wakefield Council",
+    "regionCode": "WYCA",
+    "approxBboxCentre": [-1.4988, 53.6830],
+    "approxBboxRadius": 0.12,
+    "usrnPrefix": "4745",
+    "relativeWorkVolumeWeight": 1.2
+  },
+  {
+    "name": "Sunderland City Council",
+    "regionCode": "NECA",
+    "approxBboxCentre": [-1.3776, 54.9058],
+    "approxBboxRadius": 0.10,
+    "usrnPrefix": "4505",
+    "relativeWorkVolumeWeight": 1.3
+  },
+  {
+    "name": "Sandwell Metropolitan Borough Council",
+    "regionCode": "WMC",
+    "approxBboxCentre": [-2.0196, 52.5167],
+    "approxBboxRadius": 0.08,
+    "usrnPrefix": "4420",
+    "relativeWorkVolumeWeight": 1.2
+  },
+  {
+    "name": "Walsall Council",
+    "regionCode": "WMC",
+    "approxBboxCentre": [-1.9826, 52.5860],
+    "approxBboxRadius": 0.08,
+    "usrnPrefix": "4635",
+    "relativeWorkVolumeWeight": 1.1
+  },
+  {
+    "name": "Wolverhampton City Council",
+    "regionCode": "WMC",
+    "approxBboxCentre": [-2.1286, 52.5862],
+    "approxBboxRadius": 0.09,
+    "usrnPrefix": "4660",
+    "relativeWorkVolumeWeight": 1.2
+  },
+  {
+    "name": "Salford City Council",
+    "regionCode": "GMCA",
+    "approxBboxCentre": [-2.3093, 53.4875],
+    "approxBboxRadius": 0.09,
+    "usrnPrefix": "4295",
+    "relativeWorkVolumeWeight": 1.1
+  },
+  {
+    "name": "Bolton Metropolitan Borough Council",
+    "regionCode": "GMCA",
+    "approxBboxCentre": [-2.4295, 53.5777],
+    "approxBboxRadius": 0.10,
+    "usrnPrefix": "4205",
+    "relativeWorkVolumeWeight": 1.1
+  },
+  {
+    "name": "Stockport Metropolitan Borough Council",
+    "regionCode": "GMCA",
+    "approxBboxCentre": [-2.1568, 53.4083],
+    "approxBboxRadius": 0.09,
+    "usrnPrefix": "4380",
+    "relativeWorkVolumeWeight": 1.0
+  },
+  {
+    "name": "Wigan Metropolitan Borough Council",
+    "regionCode": "GMCA",
+    "approxBboxCentre": [-2.6308, 53.5450],
+    "approxBboxRadius": 0.10,
+    "usrnPrefix": "4655",
+    "relativeWorkVolumeWeight": 1.0
+  },
+  {
+    "name": "Warrington Borough Council",
+    "regionCode": "NWCA",
+    "approxBboxCentre": [-2.5971, 53.3900],
+    "approxBboxRadius": 0.10,
+    "usrnPrefix": "4640",
+    "relativeWorkVolumeWeight": 1.0
+  },
+  {
+    "name": "Plymouth City Council",
+    "regionCode": "SWC",
+    "approxBboxCentre": [-4.1427, 50.3755],
+    "approxBboxRadius": 0.10,
+    "usrnPrefix": "1160",
+    "relativeWorkVolumeWeight": 1.1
+  },
+  {
+    "name": "Southampton City Council",
+    "regionCode": "SECA",
+    "approxBboxCentre": [-1.4000, 50.9097],
+    "approxBboxRadius": 0.09,
+    "usrnPrefix": "1775",
+    "relativeWorkVolumeWeight": 1.2
+  },
+  {
+    "name": "Portsmouth City Council",
+    "regionCode": "SECA",
+    "approxBboxCentre": [-1.0872, 50.8198],
+    "approxBboxRadius": 0.07,
+    "usrnPrefix": "1760",
+    "relativeWorkVolumeWeight": 0.9
+  },
+  {
+    "name": "Brighton and Hove City Council",
+    "regionCode": "SEC",
+    "approxBboxCentre": [-0.1395, 50.8279],
+    "approxBboxRadius": 0.09,
+    "usrnPrefix": "1445",
+    "relativeWorkVolumeWeight": 1.1
+  },
+  {
+    "name": "Reading Borough Council",
+    "regionCode": "SEMC",
+    "approxBboxCentre": [-0.9781, 51.4543],
+    "approxBboxRadius": 0.08,
+    "usrnPrefix": "1765",
+    "relativeWorkVolumeWeight": 1.0
+  },
+  {
+    "name": "Oxford City Council",
+    "regionCode": "SEMC",
+    "approxBboxCentre": [-1.2577, 51.7520],
+    "approxBboxRadius": 0.08,
+    "usrnPrefix": "3400",
+    "relativeWorkVolumeWeight": 0.9
+  },
+  {
+    "name": "Cambridge City Council",
+    "regionCode": "EEC",
+    "approxBboxCentre": [0.1218, 52.2053],
+    "approxBboxRadius": 0.07,
+    "usrnPrefix": "1200",
+    "relativeWorkVolumeWeight": 0.9
+  },
+  {
+    "name": "Norwich City Council",
+    "regionCode": "EEC",
+    "approxBboxCentre": [1.2979, 52.6309],
+    "approxBboxRadius": 0.08,
+    "usrnPrefix": "2615",
+    "relativeWorkVolumeWeight": 0.9
+  },
+  {
+    "name": "Northampton Borough Council",
+    "regionCode": "EML",
+    "approxBboxCentre": [-0.8901, 52.2405],
+    "approxBboxRadius": 0.09,
+    "usrnPrefix": "2895",
+    "relativeWorkVolumeWeight": 0.9
+  },
+  {
+    "name": "Milton Keynes Council",
+    "regionCode": "EML",
+    "approxBboxCentre": [-0.7594, 52.0406],
+    "approxBboxRadius": 0.12,
+    "usrnPrefix": "2315",
+    "relativeWorkVolumeWeight": 1.0
+  },
+  {
+    "name": "Luton Borough Council",
+    "regionCode": "EEC",
+    "approxBboxCentre": [-0.4226, 51.8787],
+    "approxBboxRadius": 0.07,
+    "usrnPrefix": "2300",
+    "relativeWorkVolumeWeight": 0.9
+  },
+  {
+    "name": "Watford Borough Council",
+    "regionCode": "EEC",
+    "approxBboxCentre": [-0.3957, 51.6553],
+    "approxBboxRadius": 0.06,
+    "usrnPrefix": "1920",
+    "relativeWorkVolumeWeight": 0.8
+  },
+  {
+    "name": "Slough Borough Council",
+    "regionCode": "SEMC",
+    "approxBboxCentre": [-0.5950, 51.5105],
+    "approxBboxRadius": 0.07,
+    "usrnPrefix": "1770",
+    "relativeWorkVolumeWeight": 0.9
+  },
+  {
+    "name": "Cornwall Council",
+    "regionCode": "SWC",
+    "approxBboxCentre": [-4.8357, 50.2660],
+    "approxBboxRadius": 0.55,
+    "usrnPrefix": "1145",
+    "relativeWorkVolumeWeight": 1.4
+  },
+  {
+    "name": "Devon County Council",
+    "regionCode": "SWC",
+    "approxBboxCentre": [-3.7257, 50.7156],
+    "approxBboxRadius": 0.50,
+    "usrnPrefix": "1115",
+    "relativeWorkVolumeWeight": 1.3
+  },
+  {
+    "name": "Somerset County Council",
+    "regionCode": "SWC",
+    "approxBboxCentre": [-2.9746, 51.0577],
+    "approxBboxRadius": 0.45,
+    "usrnPrefix": "3330",
+    "relativeWorkVolumeWeight": 1.1
+  },
+  {
+    "name": "Wiltshire Council",
+    "regionCode": "SWC",
+    "approxBboxCentre": [-1.9928, 51.3492],
+    "approxBboxRadius": 0.45,
+    "usrnPrefix": "3935",
+    "relativeWorkVolumeWeight": 1.0
+  },
+  {
+    "name": "Dorset Council",
+    "regionCode": "SWC",
+    "approxBboxCentre": [-2.4354, 50.7479],
+    "approxBboxRadius": 0.40,
+    "usrnPrefix": "1120",
+    "relativeWorkVolumeWeight": 0.9
+  },
+  {
+    "name": "Hampshire County Council",
+    "regionCode": "SECA",
+    "approxBboxCentre": [-1.3873, 51.0577],
+    "approxBboxRadius": 0.45,
+    "usrnPrefix": "1780",
+    "relativeWorkVolumeWeight": 1.3
+  }
+]

@@ -36,5 +36,8 @@ class Settings(BaseSettings):
     # Mapbox (read by frontend; backend may need for geocoding fallback)
     next_public_mapbox_token: str = ""
 
+    # Runtime environment — set ENV=production in Railway
+    environment: str = "development"
+
 
 settings = Settings()
