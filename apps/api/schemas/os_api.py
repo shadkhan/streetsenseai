@@ -77,6 +77,15 @@ class OSOpenRoadsProperties(BaseModel):
     length: float | None = None              # metres
 
 
+class OSFeatureGeometry(BaseModel):
+    """GeoJSON geometry on an OS Open Roads feature (CR-001)."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    type: str
+    coordinates: list[list[float]]
+
+
 class OSOpenRoadsFeature(BaseModel):
     """A single GeoJSON Feature from the OS Open Roads collection."""
 
@@ -84,6 +93,7 @@ class OSOpenRoadsFeature(BaseModel):
 
     type: str = "Feature"
     properties: OSOpenRoadsProperties | None = None
+    geometry: OSFeatureGeometry | None = None
 
 
 class OSOpenRoadsCollection(BaseModel):

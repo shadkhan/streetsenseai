@@ -49,6 +49,20 @@ StreetWorkStatus = Literal[
 # ── Road Info (SM-004) ────────────────────────────────────────────────────────
 
 
+class RiskFactor(BaseModel):
+    """A single factor contributing to a corridor's risk score (CR-003/CR-004).
+
+    Mirrors the TypeScript RiskFactor interface in types/index.ts.
+    """
+
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+
+    factor: str
+    weight: float
+    contribution: float
+    description: str
+
+
 class RoadInfo(BaseModel):
     """OS Open Roads classification for a road link.
 
