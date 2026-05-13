@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import type { Corridor } from '@/types'
+import type { Corridor, SchedulingConflict } from '@/types'
 import type { TimeWindow } from '@/lib/stores/map'
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
@@ -40,5 +40,20 @@ export function useCorridor(id: string | null, timeWindow: TimeWindow | null = n
     queryFn: () => fetchCorridor(id!, timeWindow),
     enabled: id !== null,
     staleTime: 60 * 1000,
+  })
+}
+
+async function fetchConflicts(): Promise<SchedulingConflict[]> {
+  const url = new URL(`${API_BASE}/scheduling/conflicts`)
+  const res = await fetch(url.toString())
+  if (!res.ok) throw new Error(`Failed to fetch conflicts: ${res.status}`)
+  return res.json() as Promise<SchedulingConflict[]>
+}
+
+export function useConflicts() {
+  return useQuery({
+    queryKey: ['scheduling-conflicts'],
+    queryFn: fetchConflicts,
+    staleTime: 5 * 60 * 1000,
   })
 }

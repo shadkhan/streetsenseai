@@ -125,3 +125,22 @@ export interface PermitCitation {
   promoter: string
   relevance: string
 }
+
+// ── Scheduling (AI-005) ───────────────────────────────
+export interface SchedulingConflict {
+  corridorId: string
+  corridorName: string
+  permitA: string
+  permitB: string
+  streetName: string
+  overlapStart: string   // ISO 8601 date
+  overlapEnd: string     // ISO 8601 date
+  overlapDays: number
+  severity: RiskLevel
+  severityScore: number  // 0–100
+  promoterA: string
+  promoterB: string
+  trafficManagementA: string
+  trafficManagementB: string
+  recommendation: string
+}
