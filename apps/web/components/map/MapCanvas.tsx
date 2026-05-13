@@ -11,7 +11,12 @@ import type { Corridor } from '@/types'
 
 const SOURCE_ID = 'corridors'
 const LAYER_LINES = 'corridor-lines'
+const LAYER_LABELS = 'corridor-labels'
 const LAYER_HIT = 'corridor-hit'  // wide transparent layer for easier click targeting
+
+const RISK_COLORS: Record<string, string> = {
+  low: '#059669', medium: '#D97706', high: '#EA580C', critical: '#DC2626',
+}
 
 function buildGeoJSON(corridors: Corridor[]): FeatureCollection {
   return {
@@ -113,21 +118,85 @@ export function MapCanvas() {
         layout: { 'line-join': 'round', 'line-cap': 'round' },
         paint: { 'line-color': 'transparent', 'line-width': 20 },
       })
+
+      // Corridor name labels placed along the line
+      map.addLayer({
+        id: LAYER_LABELS,
+        type: 'symbol',
+        source: SOURCE_ID,
+        layout: {
+          'text-field': ['get', 'name'],
+          'text-font': ['DIN Pro Medium', 'Arial Unicode MS Regular'],
+          'text-size': 11,
+          'symbol-placement': 'line',
+          'text-offset': [0, -1],
+          'text-allow-overlap': false,
+          'text-ignore-placement': false,
+        },
+        paint: {
+          'text-color': '#18181B',
+          'text-halo-color': '#FFFFFF',
+          'text-halo-width': 2,
+          'text-opacity': 0.9,
+        },
+      })
     })
 
-    // Hover state tracking
+    // Hover tooltip
+    const popup = new mapboxgl.Popup({
+      closeButton: false,
+      closeOnClick: false,
+      maxWidth: '240px',
+      offset: 8,
+    })
+
     let hoveredId: string | number | null = null
 
     map.on('mousemove', LAYER_HIT, (e) => {
       if (!e.features?.length) return
       map.getCanvas().style.cursor = 'pointer'
-      const id = e.features[0].id
-      if (id === hoveredId || id == null) return
-      if (hoveredId != null) {
-        map.setFeatureState({ source: SOURCE_ID, id: hoveredId }, { hover: false })
+
+      const feature = e.features[0]
+      const id = feature.id
+
+      // Update hover highlight when moving to a new corridor
+      if (id !== hoveredId && id != null) {
+        if (hoveredId != null) {
+          map.setFeatureState({ source: SOURCE_ID, id: hoveredId }, { hover: false })
+        }
+        hoveredId = id
+        map.setFeatureState({ source: SOURCE_ID, id: hoveredId }, { hover: true })
       }
-      hoveredId = id
-      map.setFeatureState({ source: SOURCE_ID, id: hoveredId }, { hover: true })
+
+      // Always update popup position and content
+      if (id != null) {
+        const p = feature.properties as {
+          name: string
+          riskLevel: string | null
+          riskScore: number | null
+          activeWorksCount: number
+        }
+        const color = p.riskLevel ? (RISK_COLORS[p.riskLevel] ?? '#94A3B8') : '#94A3B8'
+        const riskLabel = p.riskLevel
+          ? p.riskLevel.charAt(0).toUpperCase() + p.riskLevel.slice(1)
+          : 'Unscored'
+        const scoreStr = p.riskScore != null ? ` · ${Math.round(p.riskScore)}/100` : ''
+        const worksStr = p.activeWorksCount > 0
+          ? `${p.activeWorksCount} active work${p.activeWorksCount !== 1 ? 's' : ''} nearby`
+          : 'No active works'
+
+        popup
+          .setLngLat(e.lngLat)
+          .setHTML(
+            `<span class="ss-popup-name">${p.name}</span>` +
+            `<div class="ss-popup-risk">` +
+            `<span class="ss-popup-dot" style="background:${color}"></span>` +
+            `${riskLabel} risk${scoreStr}` +
+            `</div>` +
+            `<div class="ss-popup-meta">${worksStr} · click for details</div>`
+          )
+          .addTo(map)
+      }
     })
 
     map.on('mouseleave', LAYER_HIT, () => {
@@ -136,6 +205,7 @@ export function MapCanvas() {
         map.setFeatureState({ source: SOURCE_ID, id: hoveredId }, { hover: false })
         hoveredId = null
       }
+      popup.remove()
     })
 
     // Click → open corridor detail Sheet (CR-006 will render the content)
@@ -147,6 +217,7 @@ export function MapCanvas() {
     mapRef.current = map
 
     return () => {
+      popup.remove()
       map.remove()
       mapRef.current = null
     }

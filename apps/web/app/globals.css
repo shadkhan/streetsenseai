@@ -55,3 +55,46 @@
     -moz-osx-font-smoothing: grayscale;
   }
 }
+
+/* ── Mapbox popup — corridor hover tooltip ──────────────────────────── */
+.mapboxgl-popup-content {
+  padding: 10px 12px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  border: 1px solid #E4E4E7;
+  font-family: var(--font-inter), system-ui, sans-serif;
+}
+
+.mapboxgl-popup-tip {
+  display: none;
+}
+
+.ss-popup-name {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #18181B;
+  margin-bottom: 5px;
+}
+
+.ss-popup-risk {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #52525B;
+  margin-bottom: 3px;
+}
+
+.ss-popup-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.ss-popup-meta {
+  font-size: 12px;
+  color: #A1A1AA;
+}
