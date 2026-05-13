@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
+import { Providers } from './providers'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -29,8 +30,8 @@ export default function RootLayout({
       lang="en"
       className={`${inter.variable} ${jetbrainsMono.variable}`}
     >
-      <body className="bg-surface-page text-ink antialiased min-h-screen">
-        {children}
+      <body className="bg-surface-page text-ink antialiased">
+        <Providers>{children}</Providers>
       </body>
     </html>
   )

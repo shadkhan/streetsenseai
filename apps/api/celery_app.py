@@ -6,7 +6,7 @@ celery = Celery(
     "streetsense",
     broker=settings.redis_url,
     backend=settings.redis_url,
-    include=["tasks.ingest"],
+    include=["tasks.ingest", "tasks.risk_tasks"],
 )
 
 celery.conf.update(
@@ -25,6 +25,11 @@ celery.conf.update(
         "poll-sm-rest-every-15min": {
             "task": "tasks.ingest.poll_sm_rest",
             "schedule": 900.0,
+        },
+        # CR-003/004: Re-score all corridors every hour so list endpoint stays fresh
+        "score-corridors-every-hour": {
+            "task": "tasks.risk_tasks.score_all_corridors",
+            "schedule": 3600.0,
         },
     },
 )

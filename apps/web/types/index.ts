@@ -44,13 +44,13 @@ export interface Corridor {
   name: string                     // e.g. "A38 — Birmingham City Centre"
   roadClassification: 'A' | 'B' | 'C' | 'unclassified'
   geometry: CorridorGeometry       // Always LineString — never Point
-  riskLevel: RiskLevel
-  riskScore: number                // 0–100
+  riskLevel: RiskLevel | null      // null until CR-003/CR-004 scores the corridor
+  riskScore: number | null         // 0–100; null until scored
   riskFactors: RiskFactor[]
   concurrentWorks: StreetWork[]
   activeWorksCount: number
   plannedWorksCount: number
-  lastCalculated: string           // ISO 8601
+  lastCalculated: string | null    // ISO 8601; null until scored
 }
 
 export interface RiskFactor {

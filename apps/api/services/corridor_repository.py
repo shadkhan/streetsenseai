@@ -1,4 +1,4 @@
-"""Repository layer for corridor database operations (CR-001).
+"""Repository layer for corridor database operations (CR-001 to CR-004).
 
 All database access for corridors goes through this module.
 Converts between the domain CorridorBase (schemas/corridor.py) and the
@@ -9,15 +9,17 @@ Geometry conversion: domain LineStringGeometry <-> PostGIS WKB/WKT.
 from __future__ import annotations
 
 import logging
+from datetime import date as DateType, datetime, timezone
 
 from geoalchemy2.elements import WKTElement
 from geoalchemy2.shape import to_shape
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.corridor import Corridor as CorridorRow
 from schemas.corridor import CorridorBase, CorridorRead, RoadClassification
+from schemas.domain import LineStringGeometry
 
 logger = logging.getLogger(__name__)
 
@@ -114,3 +116,120 @@ async def count_corridors(session: AsyncSession) -> int:
     """Return total number of corridor records."""
     result = await session.execute(select(func.count()).select_from(CorridorRow))
     return int(result.scalar_one())
+
+
+async def save_corridor_risk(
+    session: AsyncSession,
+    corridor_id: str,
+    risk_score: float,
+    risk_level: str,
+) -> None:
+    """Persist computed risk score and level back to the corridor row (CR-003/004).
+
+    Called by the background Celery task (tasks/risk_tasks.py) after each
+    scoring run.  The list endpoint serves these stored values so it never
+    needs to re-run spatial queries for all corridors.
+    """
+    await session.execute(
+        update(CorridorRow)
+        .where(CorridorRow.id == corridor_id)
+        .values(
+            risk_score=risk_score,
+            risk_level=risk_level,
+            last_calculated=datetime.now(timezone.utc),
+        )
+    )
+    await session.commit()
+    logger.debug("Saved risk for corridor %s: %.1f (%s)", corridor_id, risk_score, risk_level)
+
+
+async def get_corridor_with_risk(
+    session: AsyncSession,
+    corridor_id: str,
+    window_start: DateType | None = None,
+    window_end: DateType | None = None,
+) -> CorridorRead | None:
+    """Return a single corridor with live-computed risk data (CR-002/003/004).
+
+    Runs the full scoring pipeline on every call — intended for the
+    GET /corridors/{id} detail endpoint where freshness matters.
+    The list endpoint (get_all_corridors) serves stored values instead.
+    window_start/window_end optionally restrict scoring to a date window (CR-007).
+    """
+    # Lazy import avoids a circular dependency (corridor_risk imports corridor models
+    # but not corridor_repository)
+    from services.corridor_risk import score_corridor
+
+    row = await session.get(CorridorRow, corridor_id)
+    if row is None:
+        return None
+
+    risk_score, risk_level, risk_factors, works = await score_corridor(
+        session, corridor_id, window_start=window_start, window_end=window_end
+    )
+
+    active_count = sum(1 for w in works if w.status == "in_progress")
+    planned_count = sum(1 for w in works if w.status in ("submitted", "granted"))
+
+    coords = _wkb_to_linestring(row.geometry)
+    classification: RoadClassification = row.road_classification  # type: ignore[assignment]
+    return CorridorRead(
+        id=row.id,
+        name=row.name,
+        road_classification=classification,
+        geometry=LineStringGeometry(type="LineString", coordinates=coords),
+        source=row.source,
+        risk_level=risk_level,
+        risk_score=risk_score,
+        risk_factors=risk_factors,
+        concurrent_works=works,
+        active_works_count=active_count,
+        planned_works_count=planned_count,
+        last_calculated=datetime.now(timezone.utc).isoformat(),
+    )
+
+
+async def get_all_corridors_scored(
+    session: AsyncSession,
+    window_start: DateType | None = None,
+    window_end: DateType | None = None,
+) -> list[CorridorRead]:
+    """Return all corridors with live-scored risk for the given date window (CR-007).
+
+    Used when the list endpoint receives date params — runs the full scoring
+    pipeline for every corridor so the map heat map reflects the chosen window.
+    Falls back to get_all_corridors (stored risk) when no window is provided.
+    """
+    from services.corridor_risk import score_corridor
+
+    rows = (
+        await session.execute(select(CorridorRow).order_by(CorridorRow.name))
+    ).scalars().all()
+
+    result: list[CorridorRead] = []
+    now_iso = datetime.now(timezone.utc).isoformat()
+
+    for row in rows:
+        risk_score, risk_level, risk_factors, works = await score_corridor(
+            session, row.id, window_start=window_start, window_end=window_end
+        )
+        active_count = sum(1 for w in works if w.status == "in_progress")
+        planned_count = sum(1 for w in works if w.status in ("submitted", "granted"))
+        coords = _wkb_to_linestring(row.geometry)
+        classification: RoadClassification = row.road_classification  # type: ignore[assignment]
+        result.append(CorridorRead(
+            id=row.id,
+            name=row.name,
+            road_classification=classification,
+            geometry=LineStringGeometry(type="LineString", coordinates=coords),
+            source=row.source,
+            risk_level=risk_level,
+            risk_score=risk_score,
+            risk_factors=risk_factors,
+            concurrent_works=works,
+            active_works_count=active_count,
+            planned_works_count=planned_count,
+            last_calculated=now_iso,
+        ))
+
+    return result
