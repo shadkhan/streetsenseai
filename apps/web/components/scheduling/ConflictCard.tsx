@@ -1,5 +1,9 @@
+'use client'
+
 import { cn } from '@/lib/utils'
 import { RISK_CONFIG } from '@/components/risk/risk-config'
+import { PermitReference } from '@/components/ui/PermitReference'
+import { usePanels } from '@/lib/stores/panels'
 import type { SchedulingConflict } from '@/types'
 
 function fmtDate(iso: string): string {
@@ -21,6 +25,7 @@ interface Props {
 }
 
 export function ConflictCard({ conflict }: Props) {
+  const { openPermit } = usePanels()
   const { bg, text, label } = RISK_CONFIG[conflict.severity]
 
   return (
@@ -40,8 +45,11 @@ export function ConflictCard({ conflict }: Props) {
       <div className="px-4 py-3 grid grid-cols-[1fr_24px_1fr] gap-3 items-start">
         <div className="space-y-0.5">
           <p className="text-xs font-medium text-ink-subtle uppercase tracking-wider mb-1">Permit A</p>
-          <p className="font-mono text-xs font-semibold text-brand">{conflict.permitA}</p>
-          <p className="text-xs text-ink">{conflict.promoterA}</p>
+          <PermitReference
+            reference={conflict.permitA}
+            onClick={() => openPermit(conflict.permitA)}
+          />
+          <p className="text-xs text-ink mt-1">{conflict.promoterA}</p>
           <p className="text-xs text-ink-muted">{fmtTrafficMgmt(conflict.trafficManagementA)}</p>
         </div>
 
@@ -51,8 +59,13 @@ export function ConflictCard({ conflict }: Props) {
 
         <div className="space-y-0.5 text-right">
           <p className="text-xs font-medium text-ink-subtle uppercase tracking-wider mb-1">Permit B</p>
-          <p className="font-mono text-xs font-semibold text-brand">{conflict.permitB}</p>
-          <p className="text-xs text-ink">{conflict.promoterB}</p>
+          <div className="flex justify-end">
+            <PermitReference
+              reference={conflict.permitB}
+              onClick={() => openPermit(conflict.permitB)}
+            />
+          </div>
+          <p className="text-xs text-ink mt-1">{conflict.promoterB}</p>
           <p className="text-xs text-ink-muted">{fmtTrafficMgmt(conflict.trafficManagementB)}</p>
         </div>
       </div>

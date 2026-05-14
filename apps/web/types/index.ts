@@ -126,6 +126,17 @@ export interface PermitCitation {
   relevance: string
 }
 
+// ── Audit Trail (AI-007) ─────────────────────────────
+export interface AuditLogEntry {
+  id: string
+  interactionType: 'copilot' | 'permit_summary'
+  query: string
+  response: string
+  citations: PermitCitation[] | null
+  sessionId: string | null
+  createdAt: string  // ISO 8601
+}
+
 // ── Scheduling (AI-005) ───────────────────────────────
 export interface SchedulingConflict {
   corridorId: string

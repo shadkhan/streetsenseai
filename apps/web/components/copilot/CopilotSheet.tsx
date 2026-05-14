@@ -7,6 +7,8 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { CopilotMessage } from './CopilotMessage'
 import { usePanels } from '@/lib/stores/panels'
+import { logInteraction } from '@/lib/api'
+import { getSessionId } from '@/lib/session'
 import type { CopilotMessage as CopilotMessageType, PermitCitation } from '@/types'
 import { cn } from '@/lib/utils'
 
@@ -28,7 +30,7 @@ type StreamChunk =
 // ── Component ──────────────────────────────────────────────────────────────────
 
 export function CopilotSheet() {
-  const { active, close } = usePanels()
+  const { active, close, openPermit } = usePanels()
   const isOpen = active === 'copilot'
 
   const [messages, setMessages] = useState<CopilotMessageType[]>([])
@@ -66,6 +68,9 @@ export function CopilotSheet() {
     setIsStreaming(true)
     setStreamingId(assistantId)
 
+    let fullText = ''
+    let fullCitations: PermitCitation[] = []
+
     try {
       const res = await fetch('/api/copilot', {
         method: 'POST',
@@ -97,12 +102,14 @@ export function CopilotSheet() {
           }
 
           if (chunk.type === 'text') {
+            fullText += chunk.content
             setMessages((prev) =>
               prev.map((m) =>
                 m.id === assistantId ? { ...m, content: m.content + chunk.content } : m
               )
             )
           } else if (chunk.type === 'meta') {
+            fullCitations = chunk.citations
             setMessages((prev) =>
               prev.map((m) =>
                 m.id === assistantId
@@ -117,6 +124,16 @@ export function CopilotSheet() {
             )
           }
         }
+      }
+
+      if (fullText) {
+        void logInteraction({
+          interactionType: 'copilot',
+          query: q,
+          response: fullText,
+          citations: fullCitations.length > 0 ? fullCitations : null,
+          sessionId: getSessionId(),
+        })
       }
     } catch {
       setMessages((prev) =>
@@ -200,6 +217,7 @@ export function CopilotSheet() {
                   message={msg}
                   isStreaming={isStreaming && msg.id === streamingId}
                   onSuggestedQuestion={handleSuggestedQuestion}
+                  onPermitClick={openPermit}
                 />
               ))
             )}

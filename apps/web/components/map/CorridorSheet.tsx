@@ -146,13 +146,17 @@ function RiskFactorsSection({ factors }: { factors: RiskFactor[] }) {
 }
 
 function WorkCard({ work }: { work: StreetWork }) {
+  const { openPermit } = usePanels()
   const isActive = work.status === 'in_progress'
   const isGranted = work.status === 'granted'
 
   return (
     <div className="p-3 rounded-lg border border-line bg-surface-raised space-y-1.5">
       <div className="flex items-start justify-between gap-2">
-        <PermitReference reference={work.permitReference} />
+        <PermitReference
+          reference={work.permitReference}
+          onClick={() => openPermit(work.permitReference)}
+        />
         <span className={cn(
           'text-xs px-1.5 py-0.5 rounded font-medium whitespace-nowrap flex-shrink-0',
           isActive  && 'bg-risk-high-bg text-risk-high',

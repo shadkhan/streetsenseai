@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 const NAV_ITEMS = [
   { href: '/', label: 'Map' },
   { href: '/scheduling', label: 'Scheduling' },
+  { href: '/audit', label: 'Audit' },
 ]
 
 export function NavLinks() {

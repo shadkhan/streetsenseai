@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import type { Corridor, SchedulingConflict } from '@/types'
+import type { AuditLogEntry, Corridor, PermitCitation, SchedulingConflict } from '@/types'
 import type { TimeWindow } from '@/lib/stores/map'
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
@@ -55,5 +55,40 @@ export function useConflicts() {
     queryKey: ['scheduling-conflicts'],
     queryFn: fetchConflicts,
     staleTime: 5 * 60 * 1000,
+  })
+}
+
+// ── Audit Trail (AI-007) ──────────────────────────────────────────────────────
+
+export async function logInteraction(entry: {
+  interactionType: 'copilot' | 'permit_summary'
+  query: string
+  response: string
+  citations?: PermitCitation[] | null
+  sessionId?: string | null
+}): Promise<void> {
+  try {
+    await fetch(`${API_BASE}/audit/log`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(entry),
+    })
+  } catch { /* best-effort — audit logging must never block the UI */ }
+}
+
+async function fetchAuditLogs(limit: number): Promise<AuditLogEntry[]> {
+  const url = new URL(`${API_BASE}/audit/logs`)
+  url.searchParams.set('limit', String(limit))
+  const res = await fetch(url.toString())
+  if (!res.ok) throw new Error(`Failed to fetch audit logs: ${res.status}`)
+  return res.json() as Promise<AuditLogEntry[]>
+}
+
+export function useAuditLogs(limit = 50) {
+  return useQuery({
+    queryKey: ['audit-logs', limit],
+    queryFn: () => fetchAuditLogs(limit),
+    staleTime: 30 * 1000,
+    refetchInterval: 30 * 1000,
   })
 }

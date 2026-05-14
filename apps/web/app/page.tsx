@@ -5,6 +5,7 @@ import { CorridorSheet } from '@/components/map/CorridorSheet'
 import { TimeWindowControl } from '@/components/map/TimeWindowControl'
 import { CopilotTrigger } from '@/components/copilot/CopilotTrigger'
 import { CopilotSheet } from '@/components/copilot/CopilotSheet'
+import { PermitSummarySheet } from '@/components/copilot/PermitSummarySheet'
 
 export default function MapPage() {
   return (
@@ -17,6 +18,7 @@ export default function MapPage() {
         <CopilotTrigger />
         <CorridorSheet />
         <CopilotSheet />
+        <PermitSummarySheet />
       </main>
     </div>
   )

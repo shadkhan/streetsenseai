@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Header } from '@/components/layout/Header'
 import { ConflictCard } from '@/components/scheduling/ConflictCard'
+import { PermitSummarySheet } from '@/components/copilot/PermitSummarySheet'
 import { useConflicts } from '@/lib/api'
 import { cn } from '@/lib/utils'
 import type { RiskLevel } from '@/types'
@@ -42,6 +43,7 @@ export default function SchedulingPage() {
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-surface-page">
       <Header />
+      <PermitSummarySheet />
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-5xl mx-auto px-6 py-8 space-y-6">
           <div>
