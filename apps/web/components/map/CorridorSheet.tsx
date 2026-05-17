@@ -8,8 +8,8 @@ import { PermitReference } from '@/components/ui/PermitReference'
 import { RiskBadge } from '@/components/risk/RiskBadge'
 import { usePanels } from '@/lib/stores/panels'
 import { useMapStore } from '@/lib/stores/map'
-import { useCorridor } from '@/lib/api'
-import type { Corridor, RiskFactor, StreetWork, RiskLevel } from '@/types'
+import { useCorridor, useStrikeRisk } from '@/lib/api'
+import type { Corridor, RiskFactor, RiskLevel, StreetWork } from '@/types'
 import { cn } from '@/lib/utils'
 
 const ROAD_CLASS_LABEL: Record<string, string> = {
@@ -145,6 +145,53 @@ function RiskFactorsSection({ factors }: { factors: RiskFactor[] }) {
   )
 }
 
+const ASSET_TYPE_LABEL: Record<string, string> = {
+  gas: 'Gas',
+  electric: 'Electric',
+  water: 'Water',
+  telecoms: 'Telecoms',
+  other: 'Other',
+}
+
+function StrikeRiskRow({ permitRef }: { permitRef: string }) {
+  const { data, isLoading } = useStrikeRisk(permitRef)
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center gap-1.5 mt-1.5 pt-1.5 border-t border-line">
+        <Skeleton className="h-3 w-24 rounded" />
+        <Skeleton className="h-4 w-14 rounded" />
+      </div>
+    )
+  }
+  if (!data) return null
+
+  const topTypes = Object.entries(data.assetsByType)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 3)
+    .map(([type]) => ASSET_TYPE_LABEL[type] ?? type)
+
+  return (
+    <div className="flex items-center gap-1.5 mt-1.5 pt-1.5 border-t border-line">
+      <span className="text-[10px] font-medium text-ink-subtle uppercase tracking-wider flex-shrink-0">
+        Underground
+      </span>
+      <RiskBadge
+        level={data.overallRisk}
+        showDot
+        className="py-0 h-[18px] text-[10px] leading-none"
+      />
+      {data.assetCount > 0 ? (
+        <span className="ml-auto text-[10px] text-ink-subtle truncate">
+          {topTypes.join(' · ')}
+        </span>
+      ) : (
+        <span className="ml-auto text-[10px] text-ink-subtle">No assets in zone</span>
+      )}
+    </div>
+  )
+}
+
 function WorkCard({ work }: { work: StreetWork }) {
   const { openPermit } = usePanels()
   const isActive = work.status === 'in_progress'
@@ -171,6 +218,7 @@ function WorkCard({ work }: { work: StreetWork }) {
       <p className="text-xs text-ink-subtle">
         {formatDate(work.proposedStartDate)} – {formatDate(work.proposedEndDate)}
       </p>
+      <StrikeRiskRow permitRef={work.permitReference} />
     </div>
   )
 }

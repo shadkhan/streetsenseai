@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import type { AuditLogEntry, Corridor, PermitCitation, SchedulingConflict } from '@/types'
+import type { AssetDensity, AuditLogEntry, Corridor, PermitCitation, SchedulingConflict, StrikeRisk } from '@/types'
 import type { TimeWindow } from '@/lib/stores/map'
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
@@ -54,6 +54,41 @@ export function useConflicts() {
   return useQuery({
     queryKey: ['scheduling-conflicts'],
     queryFn: fetchConflicts,
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+// ── NUAR Asset Density (UN-002) ──────────────────────────────────────────────
+
+async function fetchAssetDensity(corridorId: string): Promise<AssetDensity> {
+  const res = await fetch(`${API_BASE}/nuar/corridors/${corridorId}/density`)
+  if (!res.ok) throw new Error(`Failed to fetch asset density: ${res.status}`)
+  return res.json() as Promise<AssetDensity>
+}
+
+export function useAssetDensity(corridorId: string | null) {
+  return useQuery({
+    queryKey: ['asset-density', corridorId],
+    queryFn: () => fetchAssetDensity(corridorId!),
+    enabled: corridorId !== null,
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+// ── NUAR Strike Risk (UN-003) ─────────────────────────────────────────────────
+
+async function fetchStrikeRisk(permitRef: string): Promise<StrikeRisk> {
+  // permit references contain slashes (e.g. WG7/2025/04001234) — pass as path segments
+  const res = await fetch(`${API_BASE}/nuar/permits/${permitRef}/strike-risk`)
+  if (!res.ok) throw new Error(`Failed to fetch strike risk: ${res.status}`)
+  return res.json() as Promise<StrikeRisk>
+}
+
+export function useStrikeRisk(permitRef: string | null) {
+  return useQuery({
+    queryKey: ['strike-risk', permitRef],
+    queryFn: () => fetchStrikeRisk(permitRef!),
+    enabled: permitRef !== null,
     staleTime: 5 * 60 * 1000,
   })
 }

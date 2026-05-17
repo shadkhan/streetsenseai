@@ -137,6 +137,17 @@ export interface AuditLogEntry {
   createdAt: string  // ISO 8601
 }
 
+// ── NUAR Asset Density (UN-002) ───────────────────────────────────────────────
+export interface AssetDensity {
+  corridorId: string
+  totalAssets: number
+  assetsByType: Record<string, number>  // { gas: 23, electric: 21, ... }
+  weightedScore: number                  // pre-normalised weighted sum
+  densityScore: number                   // 0–100
+  densityLevel: RiskLevel
+  calculatedAt: string                   // ISO 8601
+}
+
 // ── Scheduling (AI-005) ───────────────────────────────
 export interface SchedulingConflict {
   corridorId: string
