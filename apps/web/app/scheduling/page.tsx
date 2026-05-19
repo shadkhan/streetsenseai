@@ -4,16 +4,17 @@ import { useState } from 'react'
 import { Header } from '@/components/layout/Header'
 import { ConflictCard } from '@/components/scheduling/ConflictCard'
 import { PermitSummarySheet } from '@/components/copilot/PermitSummarySheet'
+import { Hint } from '@/components/ui/Hint'
 import { useConflicts } from '@/lib/api'
 import { cn } from '@/lib/utils'
 import type { RiskLevel } from '@/types'
 
-const SEVERITY_FILTERS: Array<{ label: string; value: RiskLevel | 'all' }> = [
-  { label: 'All', value: 'all' },
-  { label: 'Critical', value: 'critical' },
-  { label: 'High', value: 'high' },
-  { label: 'Medium', value: 'medium' },
-  { label: 'Low', value: 'low' },
+const SEVERITY_FILTERS: Array<{ label: string; value: RiskLevel | 'all'; hint: string }> = [
+  { label: 'All',      value: 'all',      hint: 'Show scheduling conflicts of all severity levels'                                    },
+  { label: 'Critical', value: 'critical', hint: 'Show only critical conflicts — two major works fully overlapping on a busy corridor' },
+  { label: 'High',     value: 'high',     hint: 'Show only high severity conflicts — significant overlap on an important route'       },
+  { label: 'Medium',   value: 'medium',   hint: 'Show only medium severity conflicts — partial overlap or lower-traffic corridor'     },
+  { label: 'Low',      value: 'low',      hint: 'Show only low severity conflicts — minor overlap with minimal disruption risk'       },
 ]
 
 export default function SchedulingPage() {
@@ -67,19 +68,21 @@ export default function SchedulingPage() {
 
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="flex items-center gap-1 bg-white border border-line rounded-md p-1 shrink-0">
-              {SEVERITY_FILTERS.map(({ label, value }) => (
-                <button
-                  key={value}
-                  onClick={() => setSeverityFilter(value)}
-                  className={cn(
-                    'px-3 py-1 rounded text-xs font-medium transition-colors',
-                    severityFilter === value
-                      ? 'bg-brand text-ink-inverse'
-                      : 'text-ink-muted hover:text-ink',
-                  )}
-                >
-                  {label}
-                </button>
+              {SEVERITY_FILTERS.map(({ label, value, hint }) => (
+                <Hint key={value} text={hint} side="bottom" delayDuration={400}>
+                  <button
+                    onClick={() => setSeverityFilter(value)}
+                    aria-label={hint}
+                    className={cn(
+                      'px-3 py-1 rounded text-xs font-medium transition-colors',
+                      severityFilter === value
+                        ? 'bg-brand text-ink-inverse'
+                        : 'text-ink-muted hover:text-ink',
+                    )}
+                  >
+                    {label}
+                  </button>
+                </Hint>
               ))}
             </div>
             <input

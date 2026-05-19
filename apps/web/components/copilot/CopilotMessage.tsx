@@ -2,6 +2,7 @@
 
 import { formatDistanceToNow } from 'date-fns'
 import { PermitReference } from '@/components/ui/PermitReference'
+import { Hint } from '@/components/ui/Hint'
 import type { CopilotMessage as CopilotMessageType } from '@/types'
 
 interface Props {
@@ -96,15 +97,17 @@ export function CopilotMessage({
       {!isStreaming && message.suggestedQuestions && message.suggestedQuestions.length > 0 && (
         <div className="flex flex-wrap gap-1.5 pt-1">
           {message.suggestedQuestions.map((q) => (
-            <button
-              key={q}
-              onClick={() => onSuggestedQuestion?.(q)}
-              className="text-xs text-brand border border-brand/30 bg-brand-light
-                         rounded px-2 py-1 hover:bg-brand hover:text-ink-inverse
-                         transition-colors text-left"
-            >
-              {q}
-            </button>
+            <Hint key={q} text="Click to ask this follow-up question" side="top">
+              <button
+                onClick={() => onSuggestedQuestion?.(q)}
+                aria-label={`Ask: ${q}`}
+                className="text-xs text-brand border border-brand/30 bg-brand-light
+                           rounded px-2 py-1 hover:bg-brand hover:text-ink-inverse
+                           transition-colors text-left"
+              >
+                {q}
+              </button>
+            </Hint>
           ))}
         </div>
       )}

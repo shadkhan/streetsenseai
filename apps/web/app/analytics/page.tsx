@@ -4,6 +4,7 @@ import { useState, useRef } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Hint } from '@/components/ui/Hint'
 import { StatsCard } from '@/components/analytics/StatsCard'
 import { ComplianceTable } from '@/components/analytics/ComplianceTable'
 import { FPNList } from '@/components/analytics/FPNList'
@@ -142,14 +143,17 @@ function AIBriefingTab() {
         <p className="text-sm text-ink-muted">
           Generate a plain-English compliance briefing from the current dataset.
         </p>
-        <Button
-          onClick={generate}
-          disabled={streaming}
-          size="sm"
-          className="bg-brand text-ink-inverse hover:bg-brand/90 shrink-0"
-        >
-          {streaming ? 'Generating…' : 'Generate Briefing'}
-        </Button>
+        <Hint text="Uses AI to write a plain-English compliance briefing from live data — suitable for pasting into a management report" side="left">
+          <Button
+            onClick={generate}
+            disabled={streaming}
+            size="sm"
+            aria-label="Generate AI compliance briefing"
+            className="bg-brand text-ink-inverse hover:bg-brand/90 shrink-0"
+          >
+            {streaming ? 'Generating…' : 'Generate Briefing'}
+          </Button>
+        </Hint>
       </div>
 
       {(briefing || streaming) && (
@@ -202,14 +206,17 @@ export default function AnalyticsPage() {
               Promoter performance league table · FPN opportunities · AI briefing
             </p>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleExport}
-            className="border-line text-ink-muted hover:text-ink"
-          >
-            Export CSV
-          </Button>
+          <Hint text="Download all promoter compliance data as a CSV file for use in Excel or reporting tools" side="left">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExport}
+              aria-label="Export compliance data as CSV"
+              className="border-line text-ink-muted hover:text-ink"
+            >
+              Export CSV
+            </Button>
+          </Hint>
         </div>
 
         {/* Summary stats */}
@@ -223,23 +230,27 @@ export default function AnalyticsPage() {
               <StatsCard
                 label="Total Promoters"
                 value={summary.totalPromoters}
+                hint="Number of distinct promoters with permit records in the current dataset"
               />
               <StatsCard
                 label="Avg Compliance Score"
                 value={`${summary.avgComplianceScore.toFixed(1)}/100`}
                 accent={summary.avgComplianceScore >= 70 ? 'good' : 'risk'}
+                hint="Average compliance score across all promoters. Scores below 70 indicate systemic issues across the network"
               />
               <StatsCard
                 label="FPN Opportunities"
                 value={summary.totalFpnOpportunities}
                 sub="Overrun works this period"
                 accent={summary.totalFpnOpportunities > 0 ? 'risk' : 'default'}
+                hint="Completed works that ran past their proposed end date — each is a candidate for a Fixed Penalty Notice under the Traffic Management Act"
               />
               <StatsCard
                 label="Worst Offender Score"
                 value={summary.worstOffender ? `${summary.worstOffender.complianceScore.toFixed(1)}` : '—'}
                 sub={summary.worstOffender?.promoterName ?? ''}
                 accent="risk"
+                hint="Lowest compliance score on the network this period — this promoter requires the most urgent intervention"
               />
             </>
           ) : null}
@@ -248,16 +259,22 @@ export default function AnalyticsPage() {
         {/* Tabs */}
         <Tabs defaultValue="league">
           <TabsList className="mb-4 bg-surface-panel border border-line">
-            <TabsTrigger value="league" className="text-sm">League Table</TabsTrigger>
-            <TabsTrigger value="fpn" className="text-sm">
-              FPN Opportunities
-              {fpn && fpn.length > 0 && (
-                <span className="ml-1.5 rounded-full bg-risk-high-bg text-risk-high text-xs px-1.5 py-0">
-                  {fpn.length}
-                </span>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="briefing" className="text-sm">AI Briefing</TabsTrigger>
+            <Hint text="Promoters ranked by compliance score — worst offender first. Click a row to see their 12-month trend" side="bottom" delayDuration={500}>
+              <TabsTrigger value="league" className="text-sm">League Table</TabsTrigger>
+            </Hint>
+            <Hint text="Works that overran their proposed end date — each is a Fixed Penalty Notice candidate under the Traffic Management Act" side="bottom" delayDuration={500}>
+              <TabsTrigger value="fpn" className="text-sm">
+                FPN Opportunities
+                {fpn && fpn.length > 0 && (
+                  <span className="ml-1.5 rounded-full bg-risk-high-bg text-risk-high text-xs px-1.5 py-0">
+                    {fpn.length}
+                  </span>
+                )}
+              </TabsTrigger>
+            </Hint>
+            <Hint text="Generate an AI-written plain-English compliance briefing from the current dataset — suitable for management reports" side="bottom" delayDuration={500}>
+              <TabsTrigger value="briefing" className="text-sm">AI Briefing</TabsTrigger>
+            </Hint>
           </TabsList>
 
           <TabsContent value="league">

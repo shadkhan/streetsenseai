@@ -20,6 +20,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from database import get_db
 from schemas.corridor import CorridorRead
+from services.composite_risk import CompositeRiskResult, compute_composite_risk
 from services.corridor_repository import (
     get_all_corridors,
     get_all_corridors_scored,
@@ -72,6 +73,28 @@ async def list_corridors(
     if start_date is not None or end_date is not None:
         return await get_all_corridors_scored(session, window_start=start_date, window_end=end_date)
     return await get_all_corridors(session)
+
+
+@router.get(
+    "/{corridor_id}/composite-risk",
+    response_model=CompositeRiskResult,
+    response_model_by_alias=True,
+    summary="Composite risk score — surface + underground (UN-006)",
+    description=(
+        "Combines the surface disruption score (CR-003, 60%) with the "
+        "underground asset density score (UN-002, 40%) into a single "
+        "0-100 composite risk score with a four-level classification. "
+        "Returns 404 if the corridor does not exist."
+    ),
+)
+async def get_composite_risk(
+    corridor_id: str,
+    session: AsyncSession = Depends(get_db),
+) -> CompositeRiskResult:
+    result = await compute_composite_risk(session, corridor_id)
+    if result is None:
+        raise HTTPException(status_code=404, detail=f"Corridor '{corridor_id}' not found")
+    return result
 
 
 @router.get(

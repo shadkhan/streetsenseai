@@ -5,6 +5,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { Bot, ChevronDown, ChevronUp, FileText } from 'lucide-react'
 import { Header } from '@/components/layout/Header'
 import { PermitSummarySheet } from '@/components/copilot/PermitSummarySheet'
+import { Hint } from '@/components/ui/Hint'
 import { useAuditLogs } from '@/lib/api'
 import { cn } from '@/lib/utils'
 import type { AuditLogEntry, PermitCitation } from '@/types'
@@ -38,8 +39,11 @@ function EntryCard({ entry, isExpanded, onToggle }: EntryCardProps) {
       'bg-white border border-line rounded-lg overflow-hidden',
       isExpanded && 'ring-1 ring-brand/20',
     )}>
+      <Hint text={`${isExpanded ? 'Collapse' : 'Expand'} to ${isExpanded ? 'hide' : 'view'} the full AI response, permit citations, and session details`} side="left" delayDuration={500}>
       <button
         className="w-full text-left px-4 py-3 flex items-start gap-4 hover:bg-surface-panel/50 transition-colors"
+        aria-expanded={isExpanded}
+        aria-label={`${isExpanded ? 'Collapse' : 'Expand'} audit entry: ${entry.query}`}
         onClick={onToggle}
       >
         <div className="flex flex-col gap-1.5 flex-shrink-0 w-20 pt-0.5">
@@ -63,6 +67,7 @@ function EntryCard({ entry, isExpanded, onToggle }: EntryCardProps) {
           }
         </div>
       </button>
+      </Hint>
 
       {isExpanded && (
         <div className="px-4 pb-4 pt-3 border-t border-line space-y-3">

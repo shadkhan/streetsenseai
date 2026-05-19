@@ -5,11 +5,12 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Separator } from '@/components/ui/separator'
 import { PermitReference } from '@/components/ui/PermitReference'
+import { Hint } from '@/components/ui/Hint'
 import { RiskBadge } from '@/components/risk/RiskBadge'
 import { usePanels } from '@/lib/stores/panels'
 import { useMapStore } from '@/lib/stores/map'
-import { useCorridor, useStrikeRisk } from '@/lib/api'
-import type { Corridor, RiskFactor, RiskLevel, StreetWork } from '@/types'
+import { useCorridor, useCompositeRisk, useStrikeRisk } from '@/lib/api'
+import type { CompositeRisk, Corridor, RiskFactor, RiskLevel, StreetWork } from '@/types'
 import { cn } from '@/lib/utils'
 
 const ROAD_CLASS_LABEL: Record<string, string> = {
@@ -86,24 +87,101 @@ function SheetSkeleton() {
   )
 }
 
-function RiskSection({ level, score }: { level: RiskLevel | null; score: number | null }) {
+function ScoreBar({
+  label, score, weight, level, hint,
+}: {
+  label: string
+  score: number
+  weight: number
+  level: RiskLevel
+  hint: string
+}) {
+  const LEVEL_BAR: Record<RiskLevel, string> = {
+    low:      'bg-risk-low',
+    medium:   'bg-risk-medium',
+    high:     'bg-risk-high',
+    critical: 'bg-risk-critical',
+  }
+  return (
+    <Hint text={hint} side="left">
+      <div className="space-y-1 cursor-default">
+        <div className="flex items-center justify-between text-xs">
+          <span className="text-ink-muted">{label}</span>
+          <span className="tabular-nums font-medium text-ink">
+            {Math.round(score)}
+            <span className="text-ink-subtle font-normal">/{Math.round(weight * 100)}%</span>
+          </span>
+        </div>
+        <div className="h-1.5 bg-surface-sunken rounded-full overflow-hidden">
+          <div
+            className={cn('h-full rounded-full transition-all', LEVEL_BAR[level])}
+            style={{ width: `${score}%` }}
+          />
+        </div>
+      </div>
+    </Hint>
+  )
+}
+
+function CompositeRiskSection({ corridorId }: { corridorId: string }) {
+  const { data, isLoading } = useCompositeRisk(corridorId)
+
   return (
     <div>
-      <p className="text-xs font-medium text-ink-subtle uppercase tracking-wider mb-3">
-        Risk Level
-      </p>
-      {level === null ? (
-        <p className="text-sm text-ink-subtle">Not yet scored</p>
-      ) : (
-        <div className="flex items-center gap-3">
-          <RiskBadge level={level} />
-          {score !== null && (
+      <Hint
+        text="Composite score combines surface disruption risk (60% weight) and underground asset strike risk (40% weight) into a single 0–100 score"
+        side="right"
+      >
+        <p className="text-xs font-medium text-ink-subtle uppercase tracking-wider mb-3 cursor-default w-fit">
+          Composite Risk
+        </p>
+      </Hint>
+
+      {isLoading ? (
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-6 w-20 rounded" />
+            <Skeleton className="h-8 w-16" />
+          </div>
+          <Skeleton className="h-10 w-full rounded" />
+        </div>
+      ) : data ? (
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <RiskBadge level={data.compositeLevel} />
             <span className="text-2xl font-semibold text-ink tabular-nums">
-              {Math.round(score)}
+              {Math.round(data.compositeScore)}
               <span className="text-sm font-normal text-ink-muted">/100</span>
             </span>
+          </div>
+          <div className="space-y-2.5 pt-1">
+            <ScoreBar
+              label="Surface disruption"
+              score={data.surfaceScore}
+              weight={data.surfaceWeight}
+              level={data.surfaceLevel}
+              hint={`Surface disruption score ${Math.round(data.surfaceScore)}/100 — based on concurrent works, traffic management type, work category, and road classification. Contributes ${Math.round(data.surfaceWeight * 100)}% to the composite.`}
+            />
+            <ScoreBar
+              label="Underground density"
+              score={data.undergroundScore}
+              weight={data.undergroundWeight}
+              level={data.undergroundLevel}
+              hint={
+                data.undergroundAssetsInRange > 0
+                  ? `Underground asset density score ${Math.round(data.undergroundScore)}/100 — based on ${data.undergroundAssetsInRange} buried assets within 100 m, weighted by utility type danger (gas > electric > water > telecoms). Contributes ${Math.round(data.undergroundWeight * 100)}% to the composite.`
+                  : `No underground assets found within 100 m of this corridor. Underground score is 0 — composite is driven entirely by surface risk. Seed NUAR data via POST /nuar/admin/seed to populate.`
+              }
+            />
+          </div>
+          {data.undergroundAssetsInRange === 0 && (
+            <p className="text-xs text-ink-subtle italic">
+              No underground assets within 100 m — seed NUAR data to enable full composite scoring
+            </p>
           )}
         </div>
+      ) : (
+        <p className="text-sm text-ink-subtle">Composite score unavailable</p>
       )}
     </div>
   )
@@ -241,7 +319,7 @@ function SheetBody({ corridor }: { corridor: Corridor }) {
 
       <ScrollArea className="flex-1 min-h-0">
         <div className="px-4 py-4 space-y-5">
-          <RiskSection level={corridor.riskLevel} score={corridor.riskScore} />
+          <CompositeRiskSection corridorId={corridor.id} />
 
           <Separator />
 

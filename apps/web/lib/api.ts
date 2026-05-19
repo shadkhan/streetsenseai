@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import type {
-  AssetDensity, AuditLogEntry, Corridor, ComplianceSummary,
+  AssetDensity, AuditLogEntry, Corridor, CompositeRisk, ComplianceSummary,
   FPNOpportunity, MonthlyTrend, PermitCitation, PromoterCompliance,
   SchedulingConflict, StrikeRisk,
 } from '@/types'
@@ -58,6 +58,23 @@ export function useConflicts() {
   return useQuery({
     queryKey: ['scheduling-conflicts'],
     queryFn: fetchConflicts,
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+// ── Composite Risk (UN-006) ───────────────────────────────────────────────────
+
+async function fetchCompositeRisk(corridorId: string): Promise<CompositeRisk> {
+  const res = await fetch(`${API_BASE}/corridors/${corridorId}/composite-risk`)
+  if (!res.ok) throw new Error(`Failed to fetch composite risk: ${res.status}`)
+  return res.json() as Promise<CompositeRisk>
+}
+
+export function useCompositeRisk(corridorId: string | null) {
+  return useQuery({
+    queryKey: ['composite-risk', corridorId],
+    queryFn: () => fetchCompositeRisk(corridorId!),
+    enabled: corridorId !== null,
     staleTime: 5 * 60 * 1000,
   })
 }

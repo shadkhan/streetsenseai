@@ -148,6 +148,21 @@ export interface AssetDensity {
   calculatedAt: string                   // ISO 8601
 }
 
+// ── Composite Risk (UN-006) ───────────────────────────────────
+export interface CompositeRisk {
+  corridorId: string
+  surfaceScore: number          // 0–100 from CR-003
+  surfaceLevel: RiskLevel
+  undergroundScore: number      // 0–100 from UN-002 (0 if no assets in range)
+  undergroundLevel: RiskLevel
+  compositeScore: number        // 0–100 weighted combination
+  compositeLevel: RiskLevel
+  surfaceWeight: number         // 0.60
+  undergroundWeight: number     // 0.40
+  undergroundAssetsInRange: number
+  calculatedAt: string
+}
+
 // ── Non-Compliance Analytics (NC-001 – NC-006) ───────────────
 export interface FPNOpportunity {
   permitReference: string

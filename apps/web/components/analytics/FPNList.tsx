@@ -2,6 +2,7 @@
 
 import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
+import { Hint } from '@/components/ui/Hint'
 import type { FPNOpportunity } from '@/types'
 import { cn } from '@/lib/utils'
 
@@ -57,12 +58,17 @@ export function FPNList({ data, isLoading, className }: FPNListProps) {
             </p>
           </div>
           <div className="shrink-0 text-right">
-            <span className={cn(
-              'inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold',
-              severityClass(fpn.overrunDays),
-            )}>
-              +{fpn.overrunDays}d overrun
-            </span>
+            <Hint
+              text={`This work exceeded its proposed end date by ${fpn.overrunDays} day${fpn.overrunDays !== 1 ? 's' : ''} — eligible for a Fixed Penalty Notice`}
+              side="left"
+            >
+              <span className={cn(
+                'inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold cursor-default',
+                severityClass(fpn.overrunDays),
+              )}>
+                +{fpn.overrunDays}d overrun
+              </span>
+            </Hint>
           </div>
         </div>
       ))}
