@@ -1,10 +1,14 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import Link from 'next/link'
+import { ChevronRight } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Hint } from '@/components/ui/Hint'
+import { Header } from '@/components/layout/Header'
+import { PermitSummarySheet } from '@/components/copilot/PermitSummarySheet'
 import { StatsCard } from '@/components/analytics/StatsCard'
 import { ComplianceTable } from '@/components/analytics/ComplianceTable'
 import { FPNList } from '@/components/analytics/FPNList'
@@ -189,7 +193,10 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className="bg-surface-page min-h-screen">
+    <div className="h-screen flex flex-col overflow-hidden bg-surface-page">
+      <Header />
+      <PermitSummarySheet />
+
       {selectedPromoter && (
         <PromoterDetail
           promoter={selectedPromoter}
@@ -197,8 +204,16 @@ export default function AnalyticsPage() {
         />
       )}
 
+      <main className="flex-1 overflow-y-auto">
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Header */}
+        {/* Breadcrumb */}
+        <nav aria-label="Breadcrumb" className="flex items-center gap-1 text-xs text-ink-muted mb-5">
+          <Link href="/" className="hover:text-ink transition-colors">Map</Link>
+          <ChevronRight className="h-3 w-3 shrink-0 text-ink-subtle" />
+          <span className="text-ink font-medium">Non-Compliance Analytics</span>
+        </nav>
+
+        {/* Page header */}
         <div className="flex items-start justify-between mb-6">
           <div>
             <h1 className="text-2xl font-semibold text-brand">Non-Compliance Analytics</h1>
@@ -294,6 +309,7 @@ export default function AnalyticsPage() {
           </TabsContent>
         </Tabs>
       </div>
+      </main>
     </div>
   )
 }

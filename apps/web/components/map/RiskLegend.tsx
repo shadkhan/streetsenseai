@@ -6,7 +6,7 @@ const LEVELS: RiskLevel[] = ['critical', 'high', 'medium', 'low']
 
 export function RiskLegend() {
   return (
-    <div className="absolute bottom-8 left-4 z-10 bg-white/90 backdrop-blur-sm rounded-lg shadow-md border border-line p-3">
+    <div className="bg-white/90 backdrop-blur-sm rounded-lg shadow-md border border-line p-3">
       <p className="text-xs font-medium text-ink-subtle uppercase tracking-wider mb-2.5">
         Corridor Risk
       </p>

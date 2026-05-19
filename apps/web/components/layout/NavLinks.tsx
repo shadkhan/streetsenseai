@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils'
 const NAV_ITEMS = [
   { href: '/',           label: 'Map',        hint: 'Interactive corridor risk map — view active roadworks and risk scores' },
   { href: '/scheduling', label: 'Scheduling',  hint: 'Detect overlapping permit schedules before they cause network disruption' },
+  { href: '/analytics',  label: 'Analytics',   hint: 'Non-compliance analytics — promoter performance league table, FPN opportunities and AI briefing' },
   { href: '/audit',      label: 'Audit',       hint: 'Review all AI Copilot and permit summary interactions for accountability' },
 ]
 

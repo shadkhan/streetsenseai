@@ -56,13 +56,13 @@ const config: Config = {
 
         // ── Semantic — Risk Levels ──────────────────────────────
         risk: {
-          low:           '#059669',
+          low:           '#1A9E62',   // deep forest-green (was emerald-600)
           'low-bg':      '#D1FAE5',
-          medium:        '#D97706',
+          medium:        '#B5680A',   // deep amber-brown (was neon amber)
           'medium-bg':   '#FEF3C7',
-          high:          '#EA580C',
+          high:          '#CC470D',   // burnt sienna-orange (was bright orange)
           'high-bg':     '#FFF7ED',
-          critical:      '#DC2626',
+          critical:      '#BE2222',   // deep crimson (was bright red)
           'critical-bg': '#FEE2E2',
         },
 
