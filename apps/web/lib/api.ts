@@ -1,5 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
-import type { AssetDensity, AuditLogEntry, Corridor, PermitCitation, SchedulingConflict, StrikeRisk } from '@/types'
+import type {
+  AssetDensity, AuditLogEntry, Corridor, ComplianceSummary,
+  FPNOpportunity, MonthlyTrend, PermitCitation, PromoterCompliance,
+  SchedulingConflict, StrikeRisk,
+} from '@/types'
 import type { TimeWindow } from '@/lib/stores/map'
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
@@ -125,5 +129,68 @@ export function useAuditLogs(limit = 50) {
     queryFn: () => fetchAuditLogs(limit),
     staleTime: 30 * 1000,
     refetchInterval: 30 * 1000,
+  })
+}
+
+// ── Non-Compliance Analytics (NC-001 – NC-006) ────────────────────────────────
+
+async function fetchComplianceSummary(): Promise<ComplianceSummary> {
+  const res = await fetch(`${API_BASE}/compliance/summary`)
+  if (!res.ok) throw new Error(`Failed to fetch compliance summary: ${res.status}`)
+  return res.json() as Promise<ComplianceSummary>
+}
+
+export function useComplianceSummary() {
+  return useQuery({
+    queryKey: ['compliance-summary'],
+    queryFn: fetchComplianceSummary,
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+async function fetchPromoters(region?: string): Promise<PromoterCompliance[]> {
+  const url = new URL(`${API_BASE}/compliance/promoters`)
+  if (region) url.searchParams.set('region', region)
+  const res = await fetch(url.toString())
+  if (!res.ok) throw new Error(`Failed to fetch promoters: ${res.status}`)
+  return res.json() as Promise<PromoterCompliance[]>
+}
+
+export function usePromoters(region?: string) {
+  return useQuery({
+    queryKey: ['compliance-promoters', region ?? null],
+    queryFn: () => fetchPromoters(region),
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+async function fetchFPNOpportunities(): Promise<FPNOpportunity[]> {
+  const res = await fetch(`${API_BASE}/compliance/fpn-opportunities`)
+  if (!res.ok) throw new Error(`Failed to fetch FPN opportunities: ${res.status}`)
+  return res.json() as Promise<FPNOpportunity[]>
+}
+
+export function useFPNOpportunities() {
+  return useQuery({
+    queryKey: ['fpn-opportunities'],
+    queryFn: fetchFPNOpportunities,
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+async function fetchMonthlyTrend(licenceNumber: string): Promise<MonthlyTrend[]> {
+  const res = await fetch(
+    `${API_BASE}/compliance/promoters/${encodeURIComponent(licenceNumber)}/monthly-trend`,
+  )
+  if (!res.ok) throw new Error(`Failed to fetch monthly trend: ${res.status}`)
+  return res.json() as Promise<MonthlyTrend[]>
+}
+
+export function useMonthlyTrend(licenceNumber: string | null) {
+  return useQuery({
+    queryKey: ['monthly-trend', licenceNumber],
+    queryFn: () => fetchMonthlyTrend(licenceNumber!),
+    enabled: licenceNumber !== null,
+    staleTime: 10 * 60 * 1000,
   })
 }

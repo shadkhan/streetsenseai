@@ -12,7 +12,7 @@ export function Header({ actions }: HeaderProps) {
         <span className="text-sm font-semibold text-ink-inverse tracking-tight">
           StreetSense AI
         </span>
-        <span className="hidden md:inline text-xs text-ink-inverse opacity-40 font-normal">
+        <span className="hidden md:inline text-xs text-ink-inverse/65 font-normal tracking-wide">
           Corridor Risk Intelligence
         </span>
       </div>

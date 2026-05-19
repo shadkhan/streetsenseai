@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils'
+import { Hint } from './Hint'
 
 interface PermitReferenceProps {
   reference: string
@@ -14,12 +15,15 @@ export function PermitReference({ reference, className, onClick }: PermitReferen
 
   if (onClick) {
     return (
-      <button
-        onClick={onClick}
-        className={cn(base, 'hover:bg-brand hover:text-ink-inverse transition-colors cursor-pointer')}
-      >
-        {reference}
-      </button>
+      <Hint text={`View AI summary for permit ${reference}`} side="top">
+        <button
+          onClick={onClick}
+          aria-label={`View AI summary for permit ${reference}`}
+          className={cn(base, 'hover:bg-brand hover:text-ink-inverse transition-colors cursor-pointer')}
+        >
+          {reference}
+        </button>
+      </Hint>
     )
   }
 

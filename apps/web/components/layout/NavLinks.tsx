@@ -22,7 +22,7 @@ export function NavLinks() {
             'px-3 py-1.5 rounded text-sm font-medium transition-colors',
             pathname === href
               ? 'bg-white/20 text-ink-inverse'
-              : 'text-ink-inverse/60 hover:text-ink-inverse hover:bg-white/10',
+              : 'text-ink-inverse/75 hover:text-ink-inverse hover:bg-white/10',
           )}
         >
           {label}

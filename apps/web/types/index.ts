@@ -148,6 +148,34 @@ export interface AssetDensity {
   calculatedAt: string                   // ISO 8601
 }
 
+// ── Non-Compliance Analytics (NC-001 – NC-006) ───────────────
+export interface FPNOpportunity {
+  permitReference: string
+  promoter: string
+  promoterLicenceNumber: string
+  streetName: string
+  authority: string
+  proposedEndDate: string
+  actualEndDate: string
+  overrunDays: number
+}
+
+export interface ComplianceSummary {
+  totalPromoters: number
+  avgComplianceScore: number
+  worstOffender: PromoterCompliance | null
+  bestPerformer: PromoterCompliance | null
+  totalFpnOpportunities: number
+  calculatedAt: string
+}
+
+export interface MonthlyTrend {
+  month: string              // "2026-01"
+  complianceScore: number    // 0–100
+  totalWorks: number
+  overruns: number
+}
+
 // ── Scheduling (AI-005) ───────────────────────────────
 export interface SchedulingConflict {
   corridorId: string

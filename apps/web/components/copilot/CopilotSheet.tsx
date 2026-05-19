@@ -5,6 +5,7 @@ import { Bot, Send } from 'lucide-react'
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
+import { Hint } from '@/components/ui/Hint'
 import { CopilotMessage } from './CopilotMessage'
 import { usePanels } from '@/lib/stores/panels'
 import { logInteraction } from '@/lib/api'
@@ -199,14 +200,16 @@ export function CopilotSheet() {
                     Suggested
                   </p>
                   {SEED_QUESTIONS.map((q) => (
-                    <button
-                      key={q}
-                      onClick={() => handleSuggestedQuestion(q)}
-                      className="w-full text-left text-xs text-brand border border-brand/30 bg-brand-light
-                                 rounded px-3 py-2 hover:bg-brand hover:text-ink-inverse transition-colors"
-                    >
-                      {q}
-                    </button>
+                    <Hint key={q} text="Click to ask this question" side="left">
+                      <button
+                        onClick={() => handleSuggestedQuestion(q)}
+                        aria-label={`Ask: ${q}`}
+                        className="w-full text-left text-xs text-brand border border-brand/30 bg-brand-light
+                                   rounded px-3 py-2 hover:bg-brand hover:text-ink-inverse transition-colors"
+                      >
+                        {q}
+                      </button>
+                    </Hint>
                   ))}
                 </div>
               </div>
@@ -243,18 +246,21 @@ export function CopilotSheet() {
                          max-h-24 overflow-y-auto"
               style={{ fieldSizing: 'content' } as React.CSSProperties}
             />
-            <button
-              onClick={() => void submit(input)}
-              disabled={!input.trim() || isStreaming}
-              className={cn(
-                'flex-shrink-0 w-7 h-7 rounded flex items-center justify-center transition-colors',
-                input.trim() && !isStreaming
-                  ? 'bg-brand text-ink-inverse hover:bg-brand/90'
-                  : 'bg-surface-panel text-ink-subtle',
-              )}
-            >
-              <Send className="w-3.5 h-3.5" />
-            </button>
+            <Hint text="Send message (Enter)" side="left">
+              <button
+                onClick={() => void submit(input)}
+                disabled={!input.trim() || isStreaming}
+                aria-label="Send message"
+                className={cn(
+                  'flex-shrink-0 w-7 h-7 rounded flex items-center justify-center transition-colors',
+                  input.trim() && !isStreaming
+                    ? 'bg-brand text-ink-inverse hover:bg-brand/90'
+                    : 'bg-surface-panel text-ink-subtle',
+                )}
+              >
+                <Send className="w-3.5 h-3.5" />
+              </button>
+            </Hint>
           </div>
           <p className="text-xs text-ink-subtle mt-1.5 text-center">
             Shift + Enter for new line · Enter to send
