@@ -166,9 +166,16 @@ async def get_stats(
         "phase": 5,
         "api_keys_configured": {
             "anthropic": bool(settings.anthropic_api_key),
-            "street_manager": bool(settings.street_manager_api_key),
+            "street_manager": bool(settings.sm_email and settings.sm_password),
             "os_datahub": bool(settings.os_client_id and settings.os_client_secret),
             "mapbox": bool(settings.next_public_mapbox_token),
             "nuar": bool(getattr(settings, "nuar_api_key", "")),
+        },
+        "webhook_endpoints": {
+            "base_url": settings.public_api_url,
+            "permits":    f"{settings.public_api_url}/webhooks/permits",
+            "activities": f"{settings.public_api_url}/webhooks/activities",
+            "section58":  f"{settings.public_api_url}/webhooks/section58",
+            "note": "Update PUBLIC_API_URL in .env.prod on Hetzner when deploying (then notify SM onboarding team)",
         },
     }

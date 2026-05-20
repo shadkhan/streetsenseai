@@ -39,6 +39,14 @@ interface DataSourceConfig {
   ai_copilot: string
 }
 
+interface WebhookEndpoints {
+  base_url: string
+  permits: string
+  activities: string
+  section58: string
+  note: string
+}
+
 interface AdminStats {
   street_works: { total: number; active: number; by_status: Record<string, number> }
   corridors: { total: number; scored: number }
@@ -49,6 +57,7 @@ interface AdminStats {
   environment: string
   phase: number
   api_keys_configured: Record<string, boolean>
+  webhook_endpoints: WebhookEndpoints
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -570,6 +579,50 @@ function SystemTab() {
               <span className="text-sm font-medium text-ink font-mono">{String(v)}</span>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Webhook Endpoints */}
+      <div className="rounded-lg border border-line overflow-hidden">
+        <div className="px-4 py-3 border-b border-line bg-surface-panel">
+          <p className="text-sm font-medium text-ink">Street Manager Webhook Endpoints</p>
+          <p className="text-xs text-ink-muted">
+            Registered with the Street Manager onboarding team. Update{' '}
+            <code className="font-mono text-[10px] bg-surface-sunken px-1 py-0.5 rounded">PUBLIC_API_URL</code>
+            {' '}in <code className="font-mono text-[10px] bg-surface-sunken px-1 py-0.5 rounded">.env.local</code>{' '}
+            when deploying to Railway.
+          </p>
+        </div>
+        <div className="divide-y divide-line">
+          {stats?.webhook_endpoints ? (
+            <>
+              <div className="flex items-start justify-between gap-4 px-4 py-2.5">
+                <span className="text-sm text-ink-muted shrink-0">Base URL</span>
+                <span className="text-sm font-medium text-ink font-mono text-right break-all">
+                  {stats.webhook_endpoints.base_url}
+                </span>
+              </div>
+              {[
+                { label: 'Permits', url: stats.webhook_endpoints.permits },
+                { label: 'Activities', url: stats.webhook_endpoints.activities },
+                { label: 'Section 58', url: stats.webhook_endpoints.section58 },
+              ].map(({ label, url }) => (
+                <div key={label} className="flex items-start justify-between gap-4 px-4 py-2.5">
+                  <span className="text-sm text-ink-muted shrink-0">{label}</span>
+                  <span className="text-xs text-ink font-mono text-right break-all leading-relaxed">
+                    {url}
+                  </span>
+                </div>
+              ))}
+              <div className="px-4 py-2.5 bg-surface-sunken">
+                <p className="text-[10px] text-ink-subtle italic">{stats.webhook_endpoints.note}</p>
+              </div>
+            </>
+          ) : (
+            <div className="px-4 py-3">
+              <p className="text-sm text-ink-muted">Not available — backend may be offline</p>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -10,9 +10,10 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    # Street Manager
-    street_manager_api_key: str = ""
-    street_manager_base_url: str = "https://api.sandbox.manage-roadworks.service.gov.uk"
+    # Street Manager — JWT auth (ADR-026)
+    sm_email: str = ""
+    sm_password: str = ""
+    sm_base_url: str = "https://api.manage-roadworks.service.gov.uk"
     street_manager_sqs_queue_url: str = ""
 
     # AWS (SQS consumer for SM-001)
@@ -36,7 +37,12 @@ class Settings(BaseSettings):
     # Mapbox (read by frontend; backend may need for geocoding fallback)
     next_public_mapbox_token: str = ""
 
-    # Runtime environment — set ENV=production in Railway
+    # Public base URL of this API — used for webhook registration reference
+    # Development: ngrok tunnel URL  →  Production: Hetzner domain (e.g. https://api.YOUR_DOMAIN)
+    # Street Manager sends events to {public_api_url}/webhooks/{permits|activities|section58}
+    public_api_url: str = "http://localhost:8000"
+
+    # Runtime environment — set ENVIRONMENT=production in .env.prod on Hetzner
     environment: str = "development"
 
     # NUAR (Phase 4+)

@@ -84,34 +84,105 @@ async def probe_anthropic() -> dict[str, Any]:
         return {"status": "error", "error": str(exc), "response_time_ms": _elapsed(start), "status_code": None}
 
 
+_SM_AUTH_PATH = "/v3/party/authenticate"
+_SM_WORKS_PATH = "/v7/works"
+
+_SM_JSON_HEADERS = {
+    "Accept": "application/json",
+    "Content-Type": "application/json",
+}
+
+
 async def probe_street_manager() -> dict[str, Any]:
-    if not settings.street_manager_api_key:
+    if not settings.sm_email or not settings.sm_password:
         return {
             "status": "not_configured",
-            "message": "STREET_MANAGER_API_KEY not set — free UK open data, register at manage-roadworks.service.gov.uk",
+            "message": "SM_EMAIL / SM_PASSWORD not set — JWT credentials required (ADR-026). Register at manage-roadworks.service.gov.uk",
             "response_time_ms": 0,
             "status_code": None,
         }
+
+    auth_url = f"{settings.sm_base_url}{_SM_AUTH_PATH}"
     start = time.monotonic()
     try:
-        async with httpx.AsyncClient(timeout=15.0) as client:
+        # follow_redirects=False so we see 3xx redirects explicitly instead of
+        # silently ending up at the frontend 404 page
+        async with httpx.AsyncClient(timeout=15.0, follow_redirects=False) as client:
+            auth_resp = await client.post(
+                auth_url,
+                headers=_SM_JSON_HEADERS,
+                json={"email": settings.sm_email, "password": settings.sm_password},
+            )
+        ms_auth = _elapsed(start)
+
+        content_type = auth_resp.headers.get("content-type", "")
+        is_json = "application/json" in content_type
+        is_html = "text/html" in content_type
+
+        # Redirect → auth endpoint has moved
+        if auth_resp.status_code in (301, 302, 307, 308):
+            return {
+                "status": "error",
+                "status_code": auth_resp.status_code,
+                "response_time_ms": ms_auth,
+                "error": f"Auth endpoint redirected → {auth_resp.headers.get('location', '?')}. Auth URL may have changed.",
+                "response": {"auth_url_tried": auth_url},
+            }
+
+        # HTML back → path not found on server (frontend 404 catch-all)
+        if is_html or not is_json:
+            return {
+                "status": "error",
+                "status_code": auth_resp.status_code,
+                "response_time_ms": ms_auth,
+                "error": (
+                    f"Auth endpoint returned HTML (not JSON) — path not found on server. "
+                    f"Tried: POST {auth_url}. "
+                    "Check SM_BASE_URL and whether credentials are REST API credentials "
+                    "or portal login credentials. Webhook delivery works independently."
+                ),
+                "response": {"auth_url_tried": auth_url, "content_type": content_type},
+            }
+
+        if auth_resp.status_code != 200:
+            body: Any = {}
+            try:
+                body = auth_resp.json()
+            except Exception:
+                body = {"raw": auth_resp.text[:300]}
+            return {
+                "status": "error",
+                "status_code": auth_resp.status_code,
+                "response_time_ms": ms_auth,
+                "error": "Authentication rejected",
+                "response": body,
+            }
+
+        id_token: str = auth_resp.json().get("id_token", "")
+
+        # Step 2: probe v7 works endpoint using the id_token header
+        start2 = time.monotonic()
+        async with httpx.AsyncClient(timeout=15.0, follow_redirects=False) as client:
             resp = await client.get(
-                f"{settings.street_manager_base_url}/v7/works",
-                headers={"Authorization": f"Bearer {settings.street_manager_api_key}"},
+                f"{settings.sm_base_url}{_SM_WORKS_PATH}",
+                headers={"token": id_token, "Accept": "application/json"},
                 params={"limit": 2},
             )
-        ms = _elapsed(start)
-        body: Any = {}
+        ms_data = _elapsed(start2)
         try:
-            body = resp.json()
+            resp_body: Any = resp.json()
         except Exception:
-            body = {"raw": resp.text[:500]}
+            resp_body = {"raw": resp.text[:500]}
         return {
             "status": "ok" if resp.status_code == 200 else "error",
             "status_code": resp.status_code,
-            "response_time_ms": ms,
-            "response": body,
-            "cost": {"note": "Free UK government open data — no usage charges"},
+            "response_time_ms": ms_auth + ms_data,
+            "response": resp_body,
+            "cost": {
+                "note": "Free UK government open data — no usage charges",
+                "auth_ms": ms_auth,
+                "data_ms": ms_data,
+            },
         }
     except Exception as exc:
         return {"status": "error", "error": str(exc), "response_time_ms": _elapsed(start), "status_code": None}

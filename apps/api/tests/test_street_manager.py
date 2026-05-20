@@ -1,4 +1,4 @@
-"""Tests for SM-001: Street Manager API client and SQS consumer."""
+"""Tests for SM-001: Street Manager API client, JWT auth manager, and SQS consumer."""
 from __future__ import annotations
 
 import json
@@ -8,7 +8,7 @@ import httpx
 import pytest
 
 from schemas.domain import LineStringGeometry, PointGeometry
-from services.street_manager import StreetManagerClient, normalize_permit
+from services.street_manager import StreetManagerAuthManager, StreetManagerClient, normalize_permit
 
 
 # ── normalize_permit ───────────────────────────────────────────────────────────
@@ -108,22 +108,134 @@ def test_normalize_permit_camelcase_json() -> None:
     assert "promoterLicenceNumber" in dumped
 
 
-# ── StreetManagerClient ────────────────────────────────────────────────────────
+# ── Shared fixtures ────────────────────────────────────────────────────────────
 
 @pytest.fixture
 def mock_redis() -> MagicMock:
     r = MagicMock()
     r.get = AsyncMock(return_value=None)
     r.setex = AsyncMock(return_value=True)
+    r.delete = AsyncMock(return_value=True)
     return r
 
 
+def _make_auth_http(id_token: str = "id-tok-abc", refresh_token: str = "ref-tok-xyz") -> MagicMock:
+    """Return a mock httpx.AsyncClient whose POST returns a valid SM auth response."""
+    mock_resp = MagicMock(spec=httpx.Response)
+    mock_resp.status_code = 200
+    mock_resp.json = MagicMock(return_value={
+        "id_token": id_token,
+        "access_token": "access-tok",
+        "refresh_token": refresh_token,
+    })
+    mock_resp.raise_for_status = MagicMock()
+
+    mock_http = MagicMock(spec=httpx.AsyncClient)
+    mock_http.post = AsyncMock(return_value=mock_resp)
+    return mock_http
+
+
+# ── StreetManagerAuthManager tests ────────────────────────────────────────────
+
+async def test_auth_manager_gets_token_on_first_call(mock_redis: MagicMock) -> None:
+    """On first call (no cached token), should authenticate and cache the id_token."""
+    auth_http = _make_auth_http(id_token="fresh-token")
+    manager = StreetManagerAuthManager(redis=mock_redis, http=auth_http)
+
+    token = await manager.get_token()
+
+    assert token == "fresh-token"
+    # Should have called /v3/party/authenticate
+    auth_http.post.assert_called_once()
+    call_url: str = auth_http.post.call_args[0][0]
+    assert "/v3/party/authenticate" in call_url
+    # Should have cached the token with 55-minute TTL
+    mock_redis.setex.assert_called()
+    ttl_arg = mock_redis.setex.call_args_list[0][0][1]
+    assert ttl_arg == StreetManagerAuthManager._TOKEN_TTL
+
+
+async def test_auth_manager_uses_cached_token(mock_redis: MagicMock) -> None:
+    """When Redis has a cached id_token, no HTTP call should be made."""
+    mock_redis.get = AsyncMock(return_value=b"cached-token")
+    auth_http = _make_auth_http()
+    manager = StreetManagerAuthManager(redis=mock_redis, http=auth_http)
+
+    token = await manager.get_token()
+
+    assert token == "cached-token"
+    auth_http.post.assert_not_called()
+
+
+async def test_auth_manager_refreshes_on_expiry(mock_redis: MagicMock) -> None:
+    """When id_token is absent but refresh_token is cached, use /v3/party/refresh."""
+    # First get returns None (id_token expired), second returns a refresh token
+    mock_redis.get = AsyncMock(side_effect=[None, b"stored-refresh-tok"])
+
+    refreshed_resp = MagicMock(spec=httpx.Response)
+    refreshed_resp.status_code = 200
+    refreshed_resp.json = MagicMock(return_value={
+        "id_token": "refreshed-id-token",
+        "refresh_token": "new-refresh-tok",
+    })
+    refreshed_resp.raise_for_status = MagicMock()
+
+    auth_http = MagicMock(spec=httpx.AsyncClient)
+    auth_http.post = AsyncMock(return_value=refreshed_resp)
+    manager = StreetManagerAuthManager(redis=mock_redis, http=auth_http)
+
+    token = await manager.get_token()
+
+    assert token == "refreshed-id-token"
+    call_url: str = auth_http.post.call_args[0][0]
+    assert "/v3/party/refresh" in call_url
+    body = auth_http.post.call_args[1]["json"]
+    assert body["refresh_token"] == "stored-refresh-tok"
+
+
+async def test_auth_manager_retries_on_401(mock_redis: MagicMock) -> None:
+    """StreetManagerClient should invalidate the cached token and retry once on 401."""
+    # Auth manager always returns a fresh token
+    auth_manager = MagicMock(spec=StreetManagerAuthManager)
+    auth_manager.get_token = AsyncMock(return_value="new-token-after-401")
+    auth_manager.invalidate = AsyncMock()
+
+    # First HTTP GET returns 401, second returns 200
+    resp_401 = MagicMock(spec=httpx.Response)
+    resp_401.status_code = 401
+
+    resp_200 = MagicMock(spec=httpx.Response)
+    resp_200.status_code = 200
+    resp_200.json = MagicMock(return_value={"works": [], "pagination_cursor": None})
+    resp_200.raise_for_status = MagicMock()
+
+    mock_http = MagicMock(spec=httpx.AsyncClient)
+    mock_http.get = AsyncMock(side_effect=[resp_401, resp_200])
+    mock_http.aclose = AsyncMock()
+
+    client = StreetManagerClient(
+        mock_redis, http_client=mock_http, auth_manager=auth_manager
+    )
+
+    # Patch _get's tenacity decorator away to test 401 logic directly
+    result = await client._get.__wrapped__(client, "/works")
+
+    assert result == {"works": [], "pagination_cursor": None}
+    auth_manager.invalidate.assert_called_once()
+    assert mock_http.get.call_count == 2
+
+
+# ── StreetManagerClient ────────────────────────────────────────────────────────
+
 @pytest.fixture
 def sm_client(mock_redis: MagicMock) -> StreetManagerClient:
-    # Inject a mock HTTP client so tests never initialise real SSL on Windows
+    # Inject mock HTTP and a pre-configured auth manager so tests never make real SSL calls
     mock_http = MagicMock(spec=httpx.AsyncClient)
     mock_http.aclose = AsyncMock()
-    return StreetManagerClient(mock_redis, http_client=mock_http)
+    mock_auth = MagicMock(spec=StreetManagerAuthManager)
+    mock_auth.get_token = AsyncMock(return_value="test-id-token")
+    mock_auth.invalidate = AsyncMock()
+    return StreetManagerClient(mock_redis, http_client=mock_http, auth_manager=mock_auth)
 
 
 async def test_get_work_cache_miss_calls_api(

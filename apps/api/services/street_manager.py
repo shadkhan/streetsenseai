@@ -1,8 +1,10 @@
 """Street Manager Open Data API v7 client.
 
-Handles authentication, rate-limit retry, and Redis caching for all
-Street Manager REST calls. Normalises raw API responses into the
-domain StreetWork model.
+Authentication: JWT username/password (ADR-026).
+  - POST /v3/party/authenticate → {id_token, access_token, refresh_token}
+  - id_token passed as "token" header (NOT "Authorization: Bearer")
+  - id_token cached in Redis for 55 minutes (5-min buffer before 1-hour expiry)
+  - On 401: invalidate cached token, call /v3/party/refresh, retry once
 
 Consumed by:
   - services/sqs_consumer.py  (SM-001 — event-driven ingestion)
@@ -61,6 +63,83 @@ _STATUS_MAP: dict[str, StreetWorkStatus] = {
     "completed": "completed",
     "closed": "closed",
 }
+
+
+# ── Auth Manager ───────────────────────────────────────────────────────────────
+
+class StreetManagerAuthManager:
+    """JWT authentication manager for the Street Manager API.
+
+    Caches the id_token in Redis with a 55-minute TTL (5-minute buffer before
+    the server-side 1-hour expiry). On cache miss, authenticates with email/password
+    or refreshes using the stored refresh_token if one is available.
+
+    SM auth endpoints are at /v3/party/* — different from the v7 data endpoints.
+    """
+
+    _CACHE_KEY = "sm:auth:id_token"
+    _REFRESH_KEY = "sm:auth:refresh_token"
+    _TOKEN_TTL = 55 * 60          # 55 minutes in seconds
+    _REFRESH_TTL = 24 * 60 * 60   # 24-hour soft expiry for refresh tokens
+
+    def __init__(
+        self,
+        redis: Redis,
+        http: httpx.AsyncClient | None = None,
+    ) -> None:
+        self._redis = redis
+        # Separate client for /v3 auth calls — no base_url, uses full URLs
+        self._http = http or httpx.AsyncClient(timeout=15.0)
+
+    async def get_token(self) -> str:
+        """Return a valid id_token, authenticating or refreshing as needed."""
+        raw = await self._redis.get(self._CACHE_KEY)
+        if raw:
+            return raw.decode() if isinstance(raw, bytes) else raw
+
+        # Try refresh before falling back to full re-auth
+        raw_refresh = await self._redis.get(self._REFRESH_KEY)
+        if raw_refresh:
+            refresh_token = raw_refresh.decode() if isinstance(raw_refresh, bytes) else raw_refresh
+            try:
+                return await self._refresh(refresh_token)
+            except Exception as exc:
+                logger.warning("SM token refresh failed, re-authenticating: %s", exc)
+
+        return await self._authenticate()
+
+    async def invalidate(self) -> None:
+        """Delete the cached id_token so the next get_token() call fetches a new one."""
+        await self._redis.delete(self._CACHE_KEY)
+
+    async def _authenticate(self) -> str:
+        resp = await self._http.post(
+            f"{settings.sm_base_url}/v3/party/authenticate",
+            json={"email": settings.sm_email, "password": settings.sm_password},
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        id_token: str = data["id_token"]
+        await self._redis.setex(self._CACHE_KEY, self._TOKEN_TTL, id_token)
+        if refresh_token := data.get("refresh_token"):
+            await self._redis.setex(self._REFRESH_KEY, self._REFRESH_TTL, refresh_token)
+        logger.debug("SM authentication successful, token cached for %ds", self._TOKEN_TTL)
+        return id_token
+
+    async def _refresh(self, refresh_token: str) -> str:
+        resp = await self._http.post(
+            f"{settings.sm_base_url}/v3/party/refresh",
+            json={"refresh_token": refresh_token},
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        id_token: str = data["id_token"]
+        await self._redis.setex(self._CACHE_KEY, self._TOKEN_TTL, id_token)
+        # Store the new refresh token (rotation); fall back to the old one if not returned
+        new_refresh = data.get("refresh_token", refresh_token)
+        await self._redis.setex(self._REFRESH_KEY, self._REFRESH_TTL, new_refresh)
+        logger.debug("SM token refreshed and cached for %ds", self._TOKEN_TTL)
+        return id_token
 
 
 # ── Normalisation ──────────────────────────────────────────────────────────────
@@ -136,6 +215,9 @@ def normalize_permit(raw: dict[str, Any]) -> StreetWork | None:
 class StreetManagerClient:
     """Async HTTP client for the Street Manager Open Data API v7.
 
+    All requests carry the "token" header (SM's name for the id_token — not
+    "Authorization: Bearer"). The auth manager handles token lifecycle.
+
     Usage (FastAPI dependency injection — wired in SM-006):
         client = StreetManagerClient(redis)
         work = await client.get_work("WG7/2025/04001234")
@@ -150,16 +232,18 @@ class StreetManagerClient:
         self,
         redis_client: Redis,
         http_client: httpx.AsyncClient | None = None,
+        auth_manager: StreetManagerAuthManager | None = None,
     ) -> None:
         self._redis = redis_client
         # http_client can be injected for testing to avoid real SSL initialisation
         self._http = http_client or httpx.AsyncClient(
-            base_url=f"{settings.street_manager_base_url}/{_SM_API_VERSION}",
-            headers={
-                "Authorization": f"Bearer {settings.street_manager_api_key}",
-                "Accept": "application/json",
-            },
+            base_url=f"{settings.sm_base_url}/{_SM_API_VERSION}",
+            headers={"Accept": "application/json"},
             timeout=30.0,
+        )
+        self._auth = auth_manager or StreetManagerAuthManager(
+            redis=redis_client,
+            http=self._http,
         )
 
     async def __aenter__(self) -> StreetManagerClient:
@@ -181,7 +265,13 @@ class StreetManagerClient:
         reraise=True,
     )
     async def _get(self, path: str, params: dict[str, Any] | None = None) -> Any:
-        response = await self._http.get(path, params=params)
+        token = await self._auth.get_token()
+        response = await self._http.get(path, params=params, headers={"token": token})
+        if response.status_code == 401:
+            # Token rejected — invalidate cache, refresh, retry once
+            await self._auth.invalidate()
+            token = await self._auth.get_token()
+            response = await self._http.get(path, params=params, headers={"token": token})
         response.raise_for_status()
         return response.json()
 

@@ -163,13 +163,9 @@ export function ComplianceTable({ data, isLoading, onRowClick }: ComplianceTable
         </TableHeader>
         <TableBody>
           {table.getRowModel().rows.map(row => (
-            <Hint
-              key={row.id}
-              text={onRowClick ? `Click to view 12-month trend and detailed breakdown for ${row.original.promoterName}` : ''}
-              side="left"
-              delayDuration={600}
-            >
             <TableRow
+              key={row.id}
+              title={onRowClick ? `Click to view 12-month trend and detailed breakdown for ${row.original.promoterName}` : undefined}
               className={cn(
                 'border-b border-line last:border-0',
                 onRowClick && 'cursor-pointer hover:bg-brand-light/40',
@@ -182,7 +178,6 @@ export function ComplianceTable({ data, isLoading, onRowClick }: ComplianceTable
                 </TableCell>
               ))}
             </TableRow>
-            </Hint>
           ))}
           {table.getRowModel().rows.length === 0 && (
             <TableRow>
