@@ -166,7 +166,7 @@ export function MapCanvas() {
   const mapRef = useRef<mapboxgl.Map | null>(null)
   const currentStyleRef = useRef<string>('')
 
-  const { center, zoom, setViewport, timeWindow, mapStyle, is3D } = useMapStore()
+  const { center, zoom, setViewport, timeWindow, mapStyle, is3D, flyTarget } = useMapStore()
   const { openCorridor } = usePanels()
   const { data: corridors = [] } = useCorridors(timeWindow)
 
@@ -313,6 +313,13 @@ export function MapCanvas() {
     if (!map) return
     map.easeTo({ pitch: is3D ? 45 : 0, duration: 600 })
   }, [is3D])
+
+  // Fly to search result
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map || !flyTarget) return
+    map.flyTo({ center: flyTarget, zoom: 13, duration: 1800, essential: true })
+  }, [flyTarget])
 
   const hasToken = Boolean(process.env.NEXT_PUBLIC_MAPBOX_TOKEN)
 

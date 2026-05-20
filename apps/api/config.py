@@ -39,5 +39,14 @@ class Settings(BaseSettings):
     # Runtime environment — set ENV=production in Railway
     environment: str = "development"
 
+    # NUAR (Phase 4+)
+    nuar_api_key: str = ""
+    nuar_base_url: str = "https://api.nuar.uk"
+
+    # Admin (development only)
+    admin_api_key: str = ""          # If blank, admin endpoints are unprotected (local dev only)
+    admin_username: str = "admin"
+    admin_password: str = "streetsense2026"
+
 
 settings = Settings()
