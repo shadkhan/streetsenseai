@@ -37,7 +37,7 @@
 | CR-006 | Corridor detail Sheet (risk factors, concurrent works, composite score) |
 | CR-007 | Time-window filter control (Today / 7 / 30 days) |
 
-**Phase 2 milestone pending:** Public demo URL, first LinkedIn post.
+**Phase 2 milestone pending:** Public demo URL
 
 ---
 
@@ -119,25 +119,6 @@
 | Auth Guard | Next.js middleware cookie-based session protecting `/admin/*` |
 | Analytics Breadcrumb | Header + `Map → Analytics` breadcrumb on analytics page |
 | SM JWT Auth (ADR-026) | fix(auth): SM-001 JWT authentication — SM_EMAIL/SM_PASSWORD replaces STREET_MANAGER_API_KEY; id_token cached 55 min in Redis, refresh on 401 |
-
----
-
-## Priority Action Plan
-
-| Priority | Action | What it unlocks |
-|----------|--------|----------------|
-| 🔴 Highest | Set `ANTHROPIC_API_KEY` in `.env.local` | AI-001 + NC-007 go live — zero code changes needed |
-| 🔴 Highest | Deploy backend to **Hetzner CX23** + frontend to **Vercel** | Phase 2 public demo milestone, LinkedIn post |
-| 🔴 Highest | Get a domain, point DNS → Hetzner IP, run Certbot | Enables HTTPS; required before SM team re-registers production webhook URLs |
-| 🟡 High | Update `PUBLIC_API_URL` in `infra/.env.prod` → notify SM onboarding team of new webhook URLs | Live permit event delivery to production server |
-| 🟡 High | Register `OS_CLIENT_ID/SECRET`, `NEXT_PUBLIC_MAPBOX_TOKEN` in `infra/.env.prod` | Real OS data + map tiles in production |
-| 🟡 High | Confirm SM REST API credentials with onboarding team (separate from webhook delivery) | Admin API health probe turns green; on-demand permit queries |
-| 🟡 High | Complete UN-005, UN-007, UN-009 | Closes Phase 4 fully |
-| 🟢 When ready | Start Phase 6 DT-001 | D-TRO consumer (can build against public beta spec now) |
-
-> The three mocked pieces (AI-001, NC-007, UN-001) all become real the moment
-> the corresponding API keys are configured. Zero code changes required.
-> API key registrations are the single highest-leverage action right now.
 
 ---
 
