@@ -4,6 +4,7 @@ import { RiskLegend } from '@/components/map/RiskLegend'
 import { MapStyleControl } from '@/components/map/MapStyleControl'
 import { MapSearch } from '@/components/map/MapSearch'
 import { CorridorSheet } from '@/components/map/CorridorSheet'
+import { DtroSheet } from '@/components/map/DtroSheet'
 import { TimeWindowControl } from '@/components/map/TimeWindowControl'
 import { CopilotTrigger } from '@/components/copilot/CopilotTrigger'
 import { CopilotSheet } from '@/components/copilot/CopilotSheet'
@@ -30,6 +31,7 @@ export default function MapPage() {
         <TimeWindowControl />
         <CopilotTrigger />
         <CorridorSheet />
+        <DtroSheet />
         <CopilotSheet />
         <PermitSummarySheet />
       </main>

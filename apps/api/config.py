@@ -49,6 +49,16 @@ class Settings(BaseSettings):
     nuar_api_key: str = ""
     nuar_base_url: str = "https://api.nuar.uk"
 
+    # D-TRO (Phase 6+, ADR-027) — credentials from DfT D-TRO portal
+    # New names (from DfT approval email): DTRO_APP_ID, DTRO_KEY, DTRO_SECRET
+    # Legacy aliases kept for backward compat: DTRO_CLIENT_ID, DTRO_CLIENT_SECRET
+    dtro_app_id: str = ""          # App ID — used as clientId in OAuth2 token request
+    dtro_key: str = ""             # API key — alternative to dtro_app_id as clientId
+    dtro_secret: str = ""          # Client secret
+    dtro_client_id: str = ""       # Legacy alias for dtro_app_id
+    dtro_client_secret: str = ""   # Legacy alias for dtro_secret
+    dtro_base_url: str = "https://dtro-integration.dft.gov.uk"
+
     # Admin (development only)
     admin_api_key: str = ""          # If blank, admin endpoints are unprotected (local dev only)
     admin_username: str = "admin"

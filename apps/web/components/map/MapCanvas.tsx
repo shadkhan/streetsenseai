@@ -4,16 +4,33 @@ import { useEffect, useRef } from 'react'
 import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import type { FeatureCollection, Feature } from 'geojson'
-import { useCorridors } from '@/lib/api'
+import { useCorridors, useDTROsGeoJSON } from '@/lib/api'
 import { useMapStore, MAP_STYLE_URLS } from '@/lib/stores/map'
 import { usePanels } from '@/lib/stores/panels'
 import type { Corridor } from '@/types'
 
 const SOURCE_ID  = 'corridors'
+const DTRO_SOURCE_ID = 'dtros'
+const DTRO_LINE_LAYER_ID   = 'dtro-line'          // LineString TROs (speed limits, closures, etc.)
+const DTRO_FILL_LAYER_ID   = 'dtro-fill'          // Polygon TROs (parking zones, bus lanes, etc.)
+const DTRO_BORDER_LAYER_ID = 'dtro-fill-outline'  // Outline for polygon zones
+const DTRO_ALL_LAYERS = [DTRO_LINE_LAYER_ID, DTRO_FILL_LAYER_ID, DTRO_BORDER_LAYER_ID] as const
 const LAYER_GLOW   = 'corridor-glow'   // outer glow for high/critical
 const LAYER_LINES  = 'corridor-lines'
 const LAYER_LABELS = 'corridor-labels'
 const LAYER_HIT    = 'corridor-hit'    // wide transparent hit target
+
+const TRO_TYPE_LABELS: Record<string, string> = {
+  speedLimit:         'Speed Limit',
+  parkingRestriction: 'Parking Restriction',
+  roadClosure:        'Road Closure',
+  busLane:            'Bus Lane',
+  cycleLane:          'Cycle Lane',
+  weightRestriction:  'Weight Restriction',
+  oneWay:             'One Way',
+  turningProhibition: 'Turning Prohibition',
+  pedestrianZone:     'Pedestrian Zone',
+}
 
 const RISK_COLORS: Record<string, string> = {
   low: '#1A9E62', medium: '#B5680A', high: '#CC470D', critical: '#BE2222',
@@ -36,6 +53,85 @@ function buildGeoJSON(corridors: Corridor[]): FeatureCollection {
         coordinates: c.geometry.coordinates as number[][],
       },
     })),
+  }
+}
+
+function addDTROLayer(map: mapboxgl.Map) {
+  if (!map.getSource(DTRO_SOURCE_ID)) {
+    map.addSource(DTRO_SOURCE_ID, {
+      type: 'geojson',
+      data: { type: 'FeatureCollection', features: [] },
+    })
+  }
+
+  // Dashed lines for linear TROs (speed limits, road closures, weight restrictions, etc.)
+  if (!map.getLayer(DTRO_LINE_LAYER_ID)) {
+    map.addLayer({
+      id: DTRO_LINE_LAYER_ID,
+      type: 'line',
+      source: DTRO_SOURCE_ID,
+      filter: ['==', ['geometry-type'], 'LineString'],
+      layout: { 'line-join': 'round', 'line-cap': 'round', 'visibility': 'none' },
+      paint: {
+        'line-color': [
+          'match', ['get', 'troType'],
+          'speedLimit',         '#EF4444',
+          'roadClosure',        '#B91C1C',
+          'weightRestriction',  '#F97316',
+          'oneWay',             '#0D9488',
+          'turningProhibition', '#CA8A04',
+          '#0EA5E9',
+        ],
+        'line-width': 3.5,
+        'line-dasharray': [5, 3],
+        'line-opacity': 0.9,
+      },
+    })
+  }
+
+  // Filled zones for area TROs (parking, bus lanes, cycle lanes, pedestrian zones)
+  if (!map.getLayer(DTRO_FILL_LAYER_ID)) {
+    map.addLayer({
+      id: DTRO_FILL_LAYER_ID,
+      type: 'fill',
+      source: DTRO_SOURCE_ID,
+      filter: ['==', ['geometry-type'], 'Polygon'],
+      layout: { 'visibility': 'none' },
+      paint: {
+        'fill-color': [
+          'match', ['get', 'troType'],
+          'parkingRestriction', '#F59E0B',
+          'pedestrianZone',     '#10B981',
+          'busLane',            '#8B5CF6',
+          'cycleLane',          '#3B82F6',
+          '#0EA5E9',
+        ],
+        'fill-opacity': 0.3,
+      },
+    })
+  }
+
+  // Zone outlines
+  if (!map.getLayer(DTRO_BORDER_LAYER_ID)) {
+    map.addLayer({
+      id: DTRO_BORDER_LAYER_ID,
+      type: 'line',
+      source: DTRO_SOURCE_ID,
+      filter: ['==', ['geometry-type'], 'Polygon'],
+      layout: { 'line-join': 'round', 'visibility': 'none' },
+      paint: {
+        'line-color': [
+          'match', ['get', 'troType'],
+          'parkingRestriction', '#D97706',
+          'pedestrianZone',     '#059669',
+          'busLane',            '#7C3AED',
+          'cycleLane',          '#2563EB',
+          '#0EA5E9',
+        ],
+        'line-width': 1.5,
+        'line-opacity': 0.75,
+      },
+    })
   }
 }
 
@@ -166,13 +262,20 @@ export function MapCanvas() {
   const mapRef = useRef<mapboxgl.Map | null>(null)
   const currentStyleRef = useRef<string>('')
 
-  const { center, zoom, setViewport, timeWindow, mapStyle, is3D, flyTarget } = useMapStore()
-  const { openCorridor } = usePanels()
+  const { center, zoom, setViewport, timeWindow, mapStyle, is3D, showDtro, flyTarget } = useMapStore()
+  const { openCorridor, openDtro } = usePanels()
   const { data: corridors = [] } = useCorridors(timeWindow)
+  // Wide UK bbox — server filters spatially within this window
+  const uкBbox: [number, number, number, number] = [-5.5, 49.5, 2.0, 55.5]
+  const { data: dtroGeoJSON } = useDTROsGeoJSON(uкBbox, showDtro)
 
-  // Keep a live ref so style.load callback can access latest corridors
+  // Live refs so style.load callback always reads the latest values after a style swap
   const corridorsRef = useRef<Corridor[]>(corridors)
+  const showDtroRef = useRef<boolean>(showDtro)
+  const dtroGeoJSONRef = useRef<typeof dtroGeoJSON>(dtroGeoJSON)
   useEffect(() => { corridorsRef.current = corridors }, [corridors])
+  useEffect(() => { showDtroRef.current = showDtro }, [showDtro])
+  useEffect(() => { dtroGeoJSONRef.current = dtroGeoJSON }, [dtroGeoJSON])
 
   // Initialise map once on mount
   useEffect(() => {
@@ -207,6 +310,18 @@ export function MapCanvas() {
     // style.load fires on initial load AND after each setStyle() — single handler for both
     map.on('style.load', () => {
       addCorridorLayers(map, corridorsRef.current)
+      addDTROLayer(map)
+      // Sync D-TRO visibility and data — critical after a style swap resets all layers
+      const vis = showDtroRef.current ? 'visible' : 'none'
+      for (const layerId of DTRO_ALL_LAYERS) {
+        if (map.getLayer(layerId)) map.setLayoutProperty(layerId, 'visibility', vis)
+      }
+      const dtroData = dtroGeoJSONRef.current
+      if (dtroData) {
+        ;(map.getSource(DTRO_SOURCE_ID) as mapboxgl.GeoJSONSource)?.setData(
+          dtroData as Parameters<mapboxgl.GeoJSONSource['setData']>[0],
+        )
+      }
     })
 
     // Hover tooltip
@@ -278,10 +393,64 @@ export function MapCanvas() {
       if (typeof id === 'string') openCorridor(id)
     })
 
+    // D-TRO hover popup
+    const dtroPopup = new mapboxgl.Popup({
+      closeButton: false,
+      closeOnClick: false,
+      maxWidth: '260px',
+      offset: 8,
+    })
+
+    const dtroInteractiveLayers = [DTRO_LINE_LAYER_ID, DTRO_FILL_LAYER_ID] as const
+
+    dtroInteractiveLayers.forEach((layerId) => {
+      map.on('mousemove', layerId, (e) => {
+        if (!e.features?.length) return
+        map.getCanvas().style.cursor = 'pointer'
+        const p = e.features[0].properties as {
+          troType: string
+          authority: string
+          referenceNumber: string
+          isTemporary: boolean
+          validFrom: string | null
+          validTo: string | null
+        }
+        const typeLabel = TRO_TYPE_LABELS[p.troType] ?? p.troType
+        const ttroTag = p.isTemporary
+          ? ' <span style="background:#FEF3C7;color:#92400E;padding:1px 5px;border-radius:3px;font-size:10px">TTRO</span>'
+          : ''
+        const validity = p.validTo
+          ? `${p.validFrom ?? '—'} → ${p.validTo}`
+          : `From ${p.validFrom ?? '—'} · Permanent`
+
+        dtroPopup
+          .setLngLat(e.lngLat)
+          .setHTML(
+            `<span class="ss-popup-name">${typeLabel}${ttroTag}</span>` +
+            `<div class="ss-popup-meta">${p.authority}</div>` +
+            `<div class="ss-popup-meta" style="font-family:monospace;font-size:10px">${p.referenceNumber}</div>` +
+            `<div class="ss-popup-meta">${validity}</div>` +
+            `<div class="ss-popup-meta" style="margin-top:4px;opacity:0.7">click for details</div>`,
+          )
+          .addTo(map)
+      })
+
+      map.on('mouseleave', layerId, () => {
+        map.getCanvas().style.cursor = ''
+        dtroPopup.remove()
+      })
+
+      map.on('click', layerId, (e) => {
+        const dtroId = e.features?.[0]?.properties?.dtroId
+        if (typeof dtroId === 'string') openDtro(dtroId)
+      })
+    })
+
     mapRef.current = map
 
     return () => {
       popup.remove()
+      dtroPopup.remove()
       map.remove()
       mapRef.current = null
     }
@@ -295,6 +464,27 @@ export function MapCanvas() {
     const source = map.getSource(SOURCE_ID) as mapboxgl.GeoJSONSource | undefined
     source?.setData(buildGeoJSON(corridors))
   }, [corridors])
+
+  // Sync D-TRO GeoJSON data to map source (DT-003)
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map || !map.isStyleLoaded()) return
+    const source = map.getSource(DTRO_SOURCE_ID) as mapboxgl.GeoJSONSource | undefined
+    if (!source) return
+    if (dtroGeoJSON) {
+      source.setData(dtroGeoJSON as Parameters<typeof source.setData>[0])
+    }
+  }, [dtroGeoJSON])
+
+  // Toggle D-TRO layer visibility (DT-003)
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map || !map.isStyleLoaded()) return
+    const vis = showDtro ? 'visible' : 'none'
+    for (const layerId of DTRO_ALL_LAYERS) {
+      if (map.getLayer(layerId)) map.setLayoutProperty(layerId, 'visibility', vis)
+    }
+  }, [showDtro])
 
   // Swap basemap style
   useEffect(() => {

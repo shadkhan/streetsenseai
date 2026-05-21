@@ -314,6 +314,75 @@ async def probe_nuar() -> dict[str, Any]:
         return {"status": "error", "error": str(exc), "response_time_ms": _elapsed(start), "status_code": None}
 
 
+async def probe_dtro() -> dict[str, Any]:
+    from services.dtro import _resolve_client_id, _resolve_client_secret
+    client_id = _resolve_client_id()
+    client_secret = _resolve_client_secret()
+    if not client_id or not client_secret:
+        return {
+            "status": "not_configured",
+            "message": (
+                "DTRO_APP_ID / DTRO_KEY and DTRO_SECRET not set — "
+                "add credentials from DfT D-TRO portal to .env.local. "
+                "Synthetic D-TRO data is active (700 orders seeded via /dtros/admin/seed)."
+            ),
+            "response_time_ms": 0,
+            "status_code": None,
+        }
+    base_url = settings.dtro_base_url or "https://dtro-integration.dft.gov.uk"
+    start = time.monotonic()
+    try:
+        async with httpx.AsyncClient(base_url=base_url, timeout=15.0) as client:
+            token_resp = await client.post(
+                "/v1/oauth-generator",
+                json={"clientId": client_id, "clientSecret": client_secret},
+                headers={"Accept": "application/json", "Content-Type": "application/json"},
+            )
+        ms_auth = _elapsed(start)
+        if token_resp.status_code != 200:
+            body: Any = {}
+            try:
+                body = token_resp.json()
+            except Exception:
+                body = {"raw": token_resp.text[:300]}
+            return {
+                "status": "error",
+                "status_code": token_resp.status_code,
+                "response_time_ms": ms_auth,
+                "error": "OAuth2 token request rejected",
+                "response": body,
+            }
+        token: str = token_resp.json().get("access_token", "")
+        # Probe the TROs list endpoint with the token
+        start2 = time.monotonic()
+        async with httpx.AsyncClient(base_url=base_url, timeout=15.0) as client:
+            tros_resp = await client.get(
+                "/v1/tros",
+                params={"page": 0, "limit": 2},
+                headers={"Authorization": f"Bearer {token}", "Accept": "application/json"},
+            )
+        ms_data = _elapsed(start2)
+        body2: Any = {}
+        try:
+            body2 = tros_resp.json()
+        except Exception:
+            body2 = {"raw": tros_resp.text[:500]}
+        return {
+            "status": "ok" if tros_resp.status_code == 200 else "error",
+            "status_code": tros_resp.status_code,
+            "response_time_ms": ms_auth + ms_data,
+            "response": body2,
+            "cost": {
+                "note": "DfT D-TRO public beta — no usage charges",
+                "auth_ms": ms_auth,
+                "data_ms": ms_data,
+                "base_url": base_url,
+            },
+        }
+    except Exception as exc:
+        return {"status": "error", "error": str(exc), "response_time_ms": _elapsed(start), "status_code": None}
+
+
 async def check_all() -> dict[str, Any]:
     """Run all probes concurrently and return a map of service → result."""
     import asyncio
@@ -323,9 +392,10 @@ async def check_all() -> dict[str, Any]:
         probe_os_datahub(),
         probe_mapbox(),
         probe_nuar(),
+        probe_dtro(),
         return_exceptions=True,
     )
-    keys = ["anthropic", "street_manager", "os_datahub", "mapbox", "nuar"]
+    keys = ["anthropic", "street_manager", "os_datahub", "mapbox", "nuar", "dtro"]
     return {
         key: result if not isinstance(result, Exception) else {"status": "error", "error": str(result)}
         for key, result in zip(keys, results)

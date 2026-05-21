@@ -24,6 +24,9 @@ interface MapState {
   setMapStyle: (style: MapStyle) => void
   is3D: boolean
   setIs3D: (value: boolean) => void
+  // D-TRO layer toggle (DT-003)
+  showDtro: boolean
+  setShowDtro: (value: boolean) => void
   // Search-driven fly-to — updated by MapSearch, consumed by MapCanvas
   flyTarget: [number, number] | null
   setFlyTarget: (coords: [number, number]) => void
@@ -36,10 +39,12 @@ export const useMapStore = create<MapState>((set) => ({
   setViewport: (center, zoom) => set({ center, zoom }),
   timeWindow: null,
   setTimeWindow: (window) => set({ timeWindow: window }),
-  mapStyle: 'satellite',
+  mapStyle: 'streets',
   setMapStyle: (style) => set({ mapStyle: style }),
-  is3D: true,
+  is3D: false,
   setIs3D: (value) => set({ is3D: value }),
+  showDtro: false,
+  setShowDtro: (value) => set({ showDtro: value }),
   flyTarget: null,
   setFlyTarget: (coords) => set({ flyTarget: coords }),
 }))

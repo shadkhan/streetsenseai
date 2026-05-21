@@ -191,6 +191,53 @@ export interface MonthlyTrend {
   overruns: number
 }
 
+// ── D-TRO (DT-001 — ADR-027) ─────────────────────────
+export type TROType =
+  | 'speedLimit'
+  | 'parkingRestriction'
+  | 'roadClosure'
+  | 'busLane'
+  | 'cycleLane'
+  | 'weightRestriction'
+  | 'oneWay'
+  | 'turningProhibition'
+  | 'pedestrianZone'
+
+export interface DTROOrder {
+  id: string
+  dtroId: string
+  schemaVersion: string
+  referenceNumber: string
+  troType: TROType
+  description: string
+  authority: string
+  isTemporary: boolean
+  validFrom: string       // ISO date
+  validTo: string | null  // null for permanent TROs
+  dataSource: string
+  createdAt: string
+}
+
+export interface TROConflict {
+  permitReference: string
+  dtroId: string
+  troType: TROType
+  conflictType: 'spatial_overlap' | 'temporal_overlap' | 'both'
+  severity: RiskLevel
+  description: string
+  authority: string
+  troReferenceNumber: string
+  troValidFrom: string
+  troValidTo: string | null
+}
+
+export interface CorridorConflicts {
+  corridorId: string
+  conflictCount: number
+  conflicts: TROConflict[]
+  calculatedAt: string
+}
+
 // ── Scheduling (AI-005) ───────────────────────────────
 export interface SchedulingConflict {
   corridorId: string

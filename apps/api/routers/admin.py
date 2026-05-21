@@ -44,6 +44,7 @@ SERVICE_PROBES = {
     "os_datahub":     api_health.probe_os_datahub,
     "mapbox":         api_health.probe_mapbox,
     "nuar":           api_health.probe_nuar,
+    "dtro":           api_health.probe_dtro,
 }
 
 
@@ -134,6 +135,19 @@ async def get_stats(
     except Exception:
         total_audit = 0
 
+    # D-TRO orders + provisions
+    try:
+        from models.dtro import DTROOrder as DTRORow, DTROProvision as DTROProvRow
+        total_dtro = (await session.execute(select(func.count()).select_from(DTRORow))).scalar_one()
+        total_dtro_provisions = (await session.execute(select(func.count()).select_from(DTROProvRow))).scalar_one()
+        temp_dtro = (
+            await session.execute(
+                select(func.count()).select_from(DTRORow).where(DTRORow.is_temporary.is_(True))
+            )
+        ).scalar_one()
+    except Exception:
+        total_dtro = total_dtro_provisions = temp_dtro = 0
+
     # Redis info
     redis_info: dict[str, Any] = {}
     try:
@@ -160,16 +174,26 @@ async def get_stats(
         },
         "nuar_assets": {"total": int(total_nuar)},
         "audit_logs": {"total": int(total_audit)},
+        "dtro_orders": {
+            "total": int(total_dtro),
+            "permanent": int(total_dtro) - int(temp_dtro),
+            "temporary": int(temp_dtro),
+            "provisions": int(total_dtro_provisions),
+        },
         "redis": redis_info,
         "data_source_config": ds_config.model_dump(),
         "environment": settings.environment,
-        "phase": 5,
+        "phase": 6,
         "api_keys_configured": {
             "anthropic": bool(settings.anthropic_api_key),
             "street_manager": bool(settings.sm_email and settings.sm_password),
             "os_datahub": bool(settings.os_client_id and settings.os_client_secret),
             "mapbox": bool(settings.next_public_mapbox_token),
             "nuar": bool(getattr(settings, "nuar_api_key", "")),
+            "dtro": bool(
+                (settings.dtro_app_id or settings.dtro_key or settings.dtro_client_id)
+                and (settings.dtro_secret or settings.dtro_client_secret)
+            ),
         },
         "webhook_endpoints": {
             "base_url": settings.public_api_url,

@@ -29,6 +29,7 @@ interface ApiHealth {
   os_datahub: ServiceResult
   mapbox: ServiceResult
   nuar: ServiceResult
+  dtro: ServiceResult
 }
 
 interface DataSourceConfig {
@@ -52,6 +53,7 @@ interface AdminStats {
   corridors: { total: number; scored: number }
   nuar_assets: { total: number }
   audit_logs: { total: number }
+  dtro_orders: { total: number; permanent: number; temporary: number; provisions: number }
   redis: Record<string, unknown>
   data_source_config: DataSourceConfig
   environment: string
@@ -97,6 +99,7 @@ const SERVICE_META: Record<string, { label: string; description: string; docsUrl
   os_datahub:     { label: 'OS Data Hub',         description: 'USRN resolver (NSG) and road classification (Open Roads) — free tier 1M calls/month' },
   mapbox:         { label: 'Mapbox GL',           description: 'Map tiles, geocoding and location search — free tier 50k loads/month' },
   nuar:           { label: 'NUAR',                description: 'Underground asset register — restricted access, synthetic data active for Phase 4' },
+  dtro:           { label: 'D-TRO (DfT)',         description: 'Digital Traffic Regulation Orders — v4.0.0 schema, OAuth2 client credentials (ADR-027)' },
 }
 
 function ServiceCard({
@@ -420,6 +423,7 @@ function LoadedDataTab() {
   const cr = stats?.corridors
   const nu = stats?.nuar_assets
   const al = stats?.audit_logs
+  const dt = stats?.dtro_orders
 
   return (
     <div className="space-y-5">
@@ -501,6 +505,49 @@ function LoadedDataTab() {
           <p className="text-2xl font-semibold text-ink tabular-nums">{nu?.total ?? 0}</p>
           <p className="text-xs text-ink-subtle">Synthetic underground assets (gas · electric · water · telecoms)</p>
         </div>
+      </div>
+
+      {/* D-TRO Orders */}
+      <div className="rounded-lg border border-line overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-line bg-surface-panel">
+          <div>
+            <p className="text-sm font-medium text-ink">D-TRO Orders (DfT)</p>
+            <p className="text-xs text-ink-muted">
+              {dt?.total ?? '—'} orders · {dt?.provisions ?? '—'} provisions
+              {dt?.total === 0 && (
+                <span className="ml-2 text-risk-high font-medium">— seed required to show map overlay</span>
+              )}
+            </p>
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={seeding === 'dtro'}
+            onClick={() => reseed('dtro', '/dtros/admin/seed')}
+            className="h-7 text-xs border-line text-ink-muted hover:text-ink"
+          >
+            {seeding === 'dtro' ? 'Seeding…' : 'Seed Synthetic'}
+          </Button>
+        </div>
+        <div className="px-4 py-3 flex gap-6">
+          <div>
+            <p className="text-2xl font-semibold text-ink tabular-nums">{dt?.total ?? '—'}</p>
+            <p className="text-xs text-ink-subtle">Total orders</p>
+          </div>
+          <div>
+            <p className="text-2xl font-semibold text-ink tabular-nums">{dt?.permanent ?? '—'}</p>
+            <p className="text-xs text-ink-subtle">Permanent TROs</p>
+          </div>
+          <div>
+            <p className="text-2xl font-semibold text-ink tabular-nums">{dt?.temporary ?? '—'}</p>
+            <p className="text-xs text-ink-subtle">TTROs</p>
+          </div>
+          <div>
+            <p className="text-2xl font-semibold text-ink tabular-nums">{dt?.provisions ?? '—'}</p>
+            <p className="text-xs text-ink-subtle">Provisions (map features)</p>
+          </div>
+        </div>
+        {seedMsg.dtro && <p className="px-4 pb-2 text-xs text-ink-subtle font-mono">{seedMsg.dtro}</p>}
       </div>
 
       {/* Audit */}

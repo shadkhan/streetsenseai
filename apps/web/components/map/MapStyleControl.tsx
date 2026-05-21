@@ -12,7 +12,7 @@ const STYLES: Array<{ value: MapStyle; label: string; hint: string }> = [
 ]
 
 export function MapStyleControl() {
-  const { mapStyle, setMapStyle, is3D, setIs3D } = useMapStore()
+  const { mapStyle, setMapStyle, is3D, setIs3D, showDtro, setShowDtro } = useMapStore()
 
   return (
     <div className="flex flex-col gap-2">
@@ -54,6 +54,27 @@ export function MapStyleControl() {
           )}
         >
           {is3D ? '3D' : '2D'}
+        </button>
+      </Hint>
+
+      {/* D-TRO layer toggle (DT-003) */}
+      <Hint
+        text={showDtro ? 'Hide D-TRO restriction boundaries' : 'Show D-TRO traffic regulation order boundaries (dashed blue lines)'}
+        side="right"
+        delayDuration={400}
+      >
+        <button
+          onClick={() => setShowDtro(!showDtro)}
+          aria-pressed={showDtro}
+          className={cn(
+            'bg-white/95 backdrop-blur-sm rounded-lg shadow-md border border-line',
+            'px-3 py-1.5 text-xs font-semibold transition-colors',
+            showDtro
+              ? 'bg-[#0EA5E9] text-white border-[#0EA5E9]'
+              : 'text-ink-muted hover:text-ink',
+          )}
+        >
+          D-TRO
         </button>
       </Hint>
     </div>

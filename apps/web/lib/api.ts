@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import type {
   AssetDensity, AuditLogEntry, Corridor, CompositeRisk, ComplianceSummary,
-  FPNOpportunity, MonthlyTrend, PermitCitation, PromoterCompliance,
-  SchedulingConflict, StrikeRisk,
+  CorridorConflicts, DTROOrder, FPNOpportunity, MonthlyTrend, PermitCitation,
+  PromoterCompliance, SchedulingConflict, StrikeRisk,
 } from '@/types'
 import type { TimeWindow } from '@/lib/stores/map'
 
@@ -209,5 +209,86 @@ export function useMonthlyTrend(licenceNumber: string | null) {
     queryFn: () => fetchMonthlyTrend(licenceNumber!),
     enabled: licenceNumber !== null,
     staleTime: 10 * 60 * 1000,
+  })
+}
+
+// ── D-TRO (DT-001 / DT-002 / DT-003) ────────────────────────────────────────
+
+async function fetchDTROsGeoJSON(bbox: [number, number, number, number]): Promise<{ type: string; features: unknown[] }> {
+  const url = new URL(`${API_BASE}/dtros/geojson`)
+  url.searchParams.set('minLng', String(bbox[0]))
+  url.searchParams.set('minLat', String(bbox[1]))
+  url.searchParams.set('maxLng', String(bbox[2]))
+  url.searchParams.set('maxLat', String(bbox[3]))
+  const res = await fetch(url.toString())
+  if (!res.ok) throw new Error(`Failed to fetch D-TRO GeoJSON: ${res.status}`)
+  return res.json() as Promise<{ type: string; features: unknown[] }>
+}
+
+export function useDTROsGeoJSON(bbox: [number, number, number, number] | null, enabled = true) {
+  return useQuery<{ type: string; features: unknown[] }>({
+    queryKey: ['dtros-geojson', bbox],
+    queryFn: () => fetchDTROsGeoJSON(bbox!),
+    enabled: enabled && bbox !== null,
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+async function fetchCorridorConflicts(corridorId: string): Promise<CorridorConflicts> {
+  const res = await fetch(`${API_BASE}/corridors/${corridorId}/conflicts`)
+  if (!res.ok) throw new Error(`Failed to fetch corridor conflicts: ${res.status}`)
+  return res.json() as Promise<CorridorConflicts>
+}
+
+export function useCorridorConflicts(corridorId: string | null) {
+  return useQuery({
+    queryKey: ['corridor-conflicts', corridorId],
+    queryFn: () => fetchCorridorConflicts(corridorId!),
+    enabled: corridorId !== null,
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+async function fetchDTROOrder(dtroId: string): Promise<DTROOrder> {
+  const res = await fetch(`${API_BASE}/dtros/${encodeURIComponent(dtroId)}`)
+  if (!res.ok) throw new Error(`Failed to fetch D-TRO: ${res.status}`)
+  return res.json() as Promise<DTROOrder>
+}
+
+export function useDTROOrder(dtroId: string | null) {
+  return useQuery({
+    queryKey: ['dtro-order', dtroId],
+    queryFn: () => fetchDTROOrder(dtroId!),
+    enabled: dtroId !== null,
+    staleTime: 10 * 60 * 1000,
+  })
+}
+
+async function fetchDTROList(params: {
+  page?: number
+  limit?: number
+  type?: string
+  authority?: string
+}): Promise<DTROOrder[]> {
+  const url = new URL(`${API_BASE}/dtros`)
+  if (params.type) url.searchParams.set('type', params.type)
+  if (params.authority) url.searchParams.set('authority', params.authority)
+  url.searchParams.set('page', String(params.page ?? 0))
+  url.searchParams.set('limit', String(params.limit ?? 200))
+  const res = await fetch(url.toString())
+  if (!res.ok) throw new Error(`Failed to fetch D-TRO list: ${res.status}`)
+  return res.json() as Promise<DTROOrder[]>
+}
+
+export function useDTROList(params: {
+  page?: number
+  limit?: number
+  type?: string
+  authority?: string
+} = {}) {
+  return useQuery({
+    queryKey: ['dtro-list', params],
+    queryFn: () => fetchDTROList(params),
+    staleTime: 5 * 60 * 1000,
   })
 }

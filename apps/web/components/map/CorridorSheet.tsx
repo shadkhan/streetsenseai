@@ -9,8 +9,8 @@ import { Hint } from '@/components/ui/Hint'
 import { RiskBadge } from '@/components/risk/RiskBadge'
 import { usePanels } from '@/lib/stores/panels'
 import { useMapStore } from '@/lib/stores/map'
-import { useCorridor, useCompositeRisk, useStrikeRisk } from '@/lib/api'
-import type { CompositeRisk, Corridor, RiskFactor, RiskLevel, StreetWork } from '@/types'
+import { useCorridor, useCompositeRisk, useCorridorConflicts, useStrikeRisk } from '@/lib/api'
+import type { CompositeRisk, Corridor, RiskFactor, RiskLevel, StreetWork, TROConflict } from '@/types'
 import { cn } from '@/lib/utils'
 
 const ROAD_CLASS_LABEL: Record<string, string> = {
@@ -301,6 +301,80 @@ function WorkCard({ work }: { work: StreetWork }) {
   )
 }
 
+const TRO_TYPE_LABEL: Record<string, string> = {
+  speedLimit: 'Speed Limit',
+  parkingRestriction: 'Parking',
+  roadClosure: 'Road Closure',
+  busLane: 'Bus Lane',
+  cycleLane: 'Cycle Lane',
+  weightRestriction: 'Weight Limit',
+  oneWay: 'One-Way',
+  turningProhibition: 'Turn Prohibition',
+  pedestrianZone: 'Pedestrian Zone',
+}
+
+const CONFLICT_TYPE_LABEL: Record<string, string> = {
+  both: 'Spatial + Temporal',
+  spatial_overlap: 'Spatial',
+  temporal_overlap: 'Temporal',
+}
+
+const SEVERITY_CHIP: Record<RiskLevel, string> = {
+  low:      'bg-risk-low-bg text-risk-low',
+  medium:   'bg-risk-medium-bg text-risk-medium',
+  high:     'bg-risk-high-bg text-risk-high',
+  critical: 'bg-risk-critical-bg text-risk-critical',
+}
+
+function ConflictCard({ conflict }: { conflict: TROConflict }) {
+  return (
+    <div className="p-3 rounded-lg border border-line bg-surface-raised space-y-1.5">
+      <div className="flex items-start justify-between gap-2">
+        <span className="text-xs px-1.5 py-0.5 rounded font-medium bg-[#E0F2FE] text-[#0369A1]">
+          {TRO_TYPE_LABEL[conflict.troType] ?? conflict.troType}
+        </span>
+        <span className={cn('text-xs px-1.5 py-0.5 rounded font-medium whitespace-nowrap', SEVERITY_CHIP[conflict.severity as RiskLevel])}>
+          {conflict.severity.charAt(0).toUpperCase() + conflict.severity.slice(1)}
+        </span>
+      </div>
+      <p className="text-xs font-mono text-ink-muted">{conflict.troReferenceNumber}</p>
+      <p className="text-sm text-ink leading-snug">{conflict.description}</p>
+      <div className="flex items-center gap-2 text-[10px] text-ink-subtle">
+        <span>{CONFLICT_TYPE_LABEL[conflict.conflictType] ?? conflict.conflictType} overlap</span>
+        {conflict.troValidTo && (
+          <span>· Expires {formatDate(conflict.troValidTo)}</span>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function ConflictsSection({ corridorId }: { corridorId: string }) {
+  const { data, isLoading } = useCorridorConflicts(corridorId)
+
+  return (
+    <div>
+      <p className="text-xs font-medium text-ink-subtle uppercase tracking-wider mb-3">
+        TRO Conflicts
+      </p>
+      {isLoading ? (
+        <div className="space-y-2">
+          <Skeleton className="h-16 w-full rounded-lg" />
+          <Skeleton className="h-16 w-full rounded-lg" />
+        </div>
+      ) : data && data.conflictCount > 0 ? (
+        <div className="space-y-2">
+          {data.conflicts.map((c, i) => (
+            <ConflictCard key={`${c.dtroId}-${c.permitReference}-${i}`} conflict={c} />
+          ))}
+        </div>
+      ) : (
+        <p className="text-sm text-ink-subtle">No TRO conflicts detected in this corridor</p>
+      )}
+    </div>
+  )
+}
+
 function SheetBody({ corridor }: { corridor: Corridor }) {
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -348,6 +422,10 @@ function SheetBody({ corridor }: { corridor: Corridor }) {
               </div>
             )}
           </div>
+
+          <Separator />
+
+          <ConflictsSection corridorId={corridor.id} />
         </div>
       </ScrollArea>
     </div>
