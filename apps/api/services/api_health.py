@@ -379,8 +379,9 @@ async def probe_dtro() -> dict[str, Any]:
         return {
             "status": "not_configured",
             "message": (
-                "DTRO_APP_ID / DTRO_KEY and DTRO_SECRET not set — "
+                "DTRO_KEY and DTRO_SECRET not set — "
                 "add credentials from DfT D-TRO portal to .env.local. "
+                "DTRO_KEY is the OAuth2 client identifier (alphanumeric key, not the UUID DTRO_APP_ID). "
                 "Synthetic D-TRO data is active (700 orders seeded via /dtros/admin/seed)."
             ),
             "response_time_ms": 0,
@@ -391,9 +392,10 @@ async def probe_dtro() -> dict[str, Any]:
     try:
         async with httpx.AsyncClient(base_url=base_url, timeout=15.0) as client:
             token_resp = await client.post(
-                "/v1/oauth-generator",
-                json={"clientId": client_id, "clientSecret": client_secret},
-                headers={"Accept": "application/json", "Content-Type": "application/json"},
+                "/oauth-generator",
+                data={"grant_type": "client_credentials"},
+                auth=(client_id, client_secret),
+                headers={"Accept": "application/json"},
             )
         ms_auth = _elapsed(start)
         if token_resp.status_code != 200:
@@ -410,12 +412,12 @@ async def probe_dtro() -> dict[str, Any]:
                 "response": body,
             }
         token: str = token_resp.json().get("access_token", "")
-        # Probe the TROs list endpoint with the token
+        # Probe the D-TROs list endpoint with the token
         start2 = time.monotonic()
         async with httpx.AsyncClient(base_url=base_url, timeout=15.0) as client:
             tros_resp = await client.get(
-                "/v1/tros",
-                params={"page": 0, "limit": 2},
+                "/dtros/all",
+                params={"page": 1, "pageSize": 2},
                 headers={"Authorization": f"Bearer {token}", "Accept": "application/json"},
             )
         ms_data = _elapsed(start2)
@@ -434,6 +436,7 @@ async def probe_dtro() -> dict[str, Any]:
                 "auth_ms": ms_auth,
                 "data_ms": ms_data,
                 "base_url": base_url,
+                "env": "production" if "dtro.dft.gov.uk" in base_url and "integration" not in base_url else "integration",
             },
         }
     except Exception as exc:

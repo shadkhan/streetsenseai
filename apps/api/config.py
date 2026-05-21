@@ -50,14 +50,19 @@ class Settings(BaseSettings):
     nuar_base_url: str = "https://api.nuar.uk"
 
     # D-TRO (Phase 6+, ADR-027) — credentials from DfT D-TRO portal
-    # New names (from DfT approval email): DTRO_APP_ID, DTRO_KEY, DTRO_SECRET
-    # Legacy aliases kept for backward compat: DTRO_CLIENT_ID, DTRO_CLIENT_SECRET
-    dtro_app_id: str = ""          # App ID — used as clientId in OAuth2 token request
-    dtro_key: str = ""             # API key — alternative to dtro_app_id as clientId
-    dtro_secret: str = ""          # Client secret
-    dtro_client_id: str = ""       # Legacy alias for dtro_app_id
+    # DTRO_KEY     → OAuth2 clientId  (sent to /v1/oauth-generator)
+    # DTRO_SECRET  → OAuth2 clientSecret
+    # DTRO_APP_ID  → portal registration UUID (not the OAuth clientId)
+    # Legacy aliases: DTRO_CLIENT_ID / DTRO_CLIENT_SECRET still accepted
+    dtro_app_id: str = ""          # Portal registration UUID — NOT the OAuth2 clientId
+    dtro_key: str = ""             # HTTP Basic Auth username (apiKey from DfT portal)
+    dtro_secret: str = ""          # HTTP Basic Auth password (apiSecret from DfT portal)
+    dtro_client_id: str = ""       # Legacy alias (maps to dtro_key role)
     dtro_client_secret: str = ""   # Legacy alias for dtro_secret
-    dtro_base_url: str = "https://dtro-integration.dft.gov.uk"
+    # Base URL must include the /v1 path prefix (confirmed from official Postman collection).
+    # Integration: https://dtro-integration.dft.gov.uk/v1
+    # Production:  https://dtro.dft.gov.uk/v1
+    dtro_base_url: str = "https://dtro-integration.dft.gov.uk/v1"
 
     # Admin (development only)
     admin_api_key: str = ""          # If blank, admin endpoints are unprotected (local dev only)
