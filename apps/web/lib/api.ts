@@ -122,6 +122,8 @@ export async function logInteraction(entry: {
   response: string
   citations?: PermitCitation[] | null
   sessionId?: string | null
+  flagged?: boolean
+  flagReason?: string | null
 }): Promise<void> {
   try {
     await fetch(`${API_BASE}/audit/log`, {

@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import DateTime, JSON, String, Text
+from sqlalchemy import Boolean, DateTime, JSON, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from database import Base
@@ -28,6 +28,8 @@ class AIAuditLog(Base):
     response: Mapped[str] = mapped_column(Text, nullable=False)
     citations: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     session_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    flagged: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, index=True)
+    flag_reason: Mapped[str | None] = mapped_column(String(64), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,

@@ -86,27 +86,72 @@ async def probe_anthropic() -> dict[str, Any]:
 
 _SM_AUTH_PATH = "/v3/party/authenticate"
 _SM_WORKS_PATH = "/v7/works"
+_SM_PRODUCTION_BASE = "https://api.manage-roadworks.service.gov.uk"
+_SM_SANDBOX_BASE    = "https://api.sandbox.manage-roadworks.service.gov.uk"
+# Bulk open data downloads — public, no auth required
+_SM_OPEN_DATA_URL   = "https://opendata.manage-roadworks.service.gov.uk"
 
 _SM_JSON_HEADERS = {
     "Accept": "application/json",
     "Content-Type": "application/json",
 }
 
+# Message shown when credentials are absent or auth is rejected
+_SM_ACCESS_NOTE = (
+    "Street Manager JWT credentials are issued only to registered highway authorities "
+    "and utility promoters — individual / open-source developers cannot obtain them. "
+    "StreetSense AI runs fully on synthetic permit data (SM-008 seed) for development. "
+    "Real bulk permit data is freely available at opendata.manage-roadworks.service.gov.uk "
+    "(no account required). Webhook delivery via AWS SNS/SQS requires a separate DfT "
+    "onboarding approval (for production deployments only)."
+)
+
+
+async def _ping_sm_open_data() -> dict[str, Any]:
+    """Connectivity check against the public open data portal — no auth needed."""
+    start = time.monotonic()
+    try:
+        async with httpx.AsyncClient(timeout=8.0, follow_redirects=True) as client:
+            resp = await client.get(_SM_OPEN_DATA_URL)
+        ms = _elapsed(start)
+        return {
+            "reachable": resp.status_code < 500,
+            "status_code": resp.status_code,
+            "response_time_ms": ms,
+            "url": _SM_OPEN_DATA_URL,
+        }
+    except Exception as exc:
+        return {
+            "reachable": False,
+            "error": str(exc)[:120],
+            "response_time_ms": _elapsed(start),
+            "url": _SM_OPEN_DATA_URL,
+        }
+
 
 async def probe_street_manager() -> dict[str, Any]:
+    base = settings.sm_base_url or _SM_SANDBOX_BASE
+
+    # Always ping the public open data portal — proves SM is reachable
+    open_data = await _ping_sm_open_data()
+
     if not settings.sm_email or not settings.sm_password:
         return {
             "status": "not_configured",
-            "message": "SM_EMAIL / SM_PASSWORD not set — JWT credentials required (ADR-026). Register at manage-roadworks.service.gov.uk",
-            "response_time_ms": 0,
+            "message": _SM_ACCESS_NOTE,
+            "response_time_ms": open_data["response_time_ms"],
             "status_code": None,
+            "response": {
+                "open_data_portal": open_data,
+                "synthetic_data": "active — seed via Admin → Loaded Data → Street Works",
+                "data_source_mode": "set to 'synthetic' in Admin → Data Sources",
+            },
         }
 
-    auth_url = f"{settings.sm_base_url}{_SM_AUTH_PATH}"
+    auth_url = f"{base}{_SM_AUTH_PATH}"
     start = time.monotonic()
     try:
-        # follow_redirects=False so we see 3xx redirects explicitly instead of
-        # silently ending up at the frontend 404 page
+        # follow_redirects=False so we see 3xx redirects explicitly
         async with httpx.AsyncClient(timeout=15.0, follow_redirects=False) as client:
             auth_resp = await client.post(
                 auth_url,
@@ -119,29 +164,39 @@ async def probe_street_manager() -> dict[str, Any]:
         is_json = "application/json" in content_type
         is_html = "text/html" in content_type
 
-        # Redirect → auth endpoint has moved
+        # Redirect → endpoint has moved
         if auth_resp.status_code in (301, 302, 307, 308):
             return {
                 "status": "error",
                 "status_code": auth_resp.status_code,
                 "response_time_ms": ms_auth,
-                "error": f"Auth endpoint redirected → {auth_resp.headers.get('location', '?')}. Auth URL may have changed.",
-                "response": {"auth_url_tried": auth_url},
+                "error": f"Auth endpoint redirected → {auth_resp.headers.get('location', '?')}.",
+                "response": {"auth_url_tried": auth_url, "open_data_portal": open_data},
             }
 
-        # HTML back → path not found on server (frontend 404 catch-all)
+        # HTML back → 404 catch-all. The SM JWT API requires an approved organisation
+        # account — individual/open-source developers cannot use this endpoint.
         if is_html or not is_json:
+            is_production = "sandbox" not in base
+            url_hint = (
+                f"SM_BASE_URL is pointing at production. "
+                f"If you have sandbox credentials, set SM_BASE_URL={_SM_SANDBOX_BASE}."
+            ) if is_production else (
+                "Sandbox URL is correct. The Street Manager JWT API is restricted to "
+                "registered highway authorities and utility promoters — individual developer "
+                "accounts are not supported by DfT. Remove SM_EMAIL/SM_PASSWORD and rely "
+                "on synthetic data instead."
+            )
             return {
-                "status": "error",
+                "status": "not_configured",
                 "status_code": auth_resp.status_code,
                 "response_time_ms": ms_auth,
-                "error": (
-                    f"Auth endpoint returned HTML (not JSON) — path not found on server. "
-                    f"Tried: POST {auth_url}. "
-                    "Check SM_BASE_URL and whether credentials are REST API credentials "
-                    "or portal login credentials. Webhook delivery works independently."
-                ),
-                "response": {"auth_url_tried": auth_url, "content_type": content_type},
+                "message": f"{url_hint} {_SM_ACCESS_NOTE}",
+                "response": {
+                    "auth_url_tried": auth_url,
+                    "open_data_portal": open_data,
+                    "current_base_url": base,
+                },
             }
 
         if auth_resp.status_code != 200:
@@ -154,17 +209,17 @@ async def probe_street_manager() -> dict[str, Any]:
                 "status": "error",
                 "status_code": auth_resp.status_code,
                 "response_time_ms": ms_auth,
-                "error": "Authentication rejected",
+                "error": "Authentication rejected — check SM_EMAIL and SM_PASSWORD.",
                 "response": body,
             }
 
         id_token: str = auth_resp.json().get("id_token", "")
 
-        # Step 2: probe v7 works endpoint using the id_token header
+        # Step 2: probe v7 works endpoint with the id_token header
         start2 = time.monotonic()
         async with httpx.AsyncClient(timeout=15.0, follow_redirects=False) as client:
             resp = await client.get(
-                f"{settings.sm_base_url}{_SM_WORKS_PATH}",
+                f"{base}{_SM_WORKS_PATH}",
                 headers={"token": id_token, "Accept": "application/json"},
                 params={"limit": 2},
             )
@@ -182,6 +237,8 @@ async def probe_street_manager() -> dict[str, Any]:
                 "note": "Free UK government open data — no usage charges",
                 "auth_ms": ms_auth,
                 "data_ms": ms_data,
+                "environment": "sandbox" if "sandbox" in base else "production",
+                "base_url": base,
             },
         }
     except Exception as exc:

@@ -16,6 +16,8 @@ class AuditLogCreate(BaseModel):
     response: str
     citations: list[dict] | None = None
     session_id: str | None = None
+    flagged: bool = False
+    flag_reason: str | None = None
 
 
 class AuditLogRead(AuditLogCreate):

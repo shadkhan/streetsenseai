@@ -295,6 +295,22 @@ Section 58: https://api.YOUR_DOMAIN/webhooks/section58
 
 ---
 
+## AI Safety & Guardrails
+
+The copilot endpoint is protected by a five-layer guardrail architecture. See [`AI_GUARDRAILS.md`](AI_GUARDRAILS.md) for the full threat model and upgrade paths.
+
+| Layer | What it does | Where |
+|-------|-------------|-------|
+| **1 — Input Gate** | Rejects queries over 600 chars, prompt injection attempts, and off-topic requests (creative writing, code help, financial advice) | `apps/web/lib/copilot-guardrails.ts` |
+| **2 — Topic Classifier** | Stub that always passes in mock mode; swap body for a Haiku single-turn call when `ANTHROPIC_API_KEY` is set | `copilot-guardrails.ts · classifyTopic()` |
+| **3 — System Prompt Hardening** | Explicit domain scope, refusal templates, anti-extraction rules, and model-identity anchoring | `apps/api/services/agent.py` |
+| **4 — Output Audit Flagging** | Scans each AI response for system-prompt leakage, PII, and guardrail-bypass signals. Sets `flagged + flag_reason` on the audit log row — does not suppress the response | `copilot-guardrails.ts · checkOutput()` |
+| **5 — Rate Limiter** | 10 requests / 60 s per sessionId (sliding window). Module-level Map; Redis upgrade is a 1-file change | `guardInput()` in `copilot-guardrails.ts` |
+
+Flagged interactions are highlighted in the `/audit` page for human review. The `ai_audit_log` table has `flagged` (bool, indexed) and `flag_reason` (varchar 64) columns added by migration `0006`.
+
+---
+
 ## Architecture Decisions
 
 Key decisions are recorded in `DECISIONS.md` (27 ADRs). Notable ones:

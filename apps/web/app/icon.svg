@@ -1,0 +1,16 @@
+<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="none">
+  <!-- Brand background -->
+  <rect width="32" height="32" rx="7" fill="#1E3A5F"/>
+  <!-- Route path: bottom-left → up → corner → right, representing a monitored road corridor -->
+  <path
+    d="M 7 25 L 7 13 Q 7 9 11 9 L 25 9"
+    stroke="white"
+    stroke-width="3"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <!-- Sensing dot at the route endpoint — the AI detection point -->
+  <circle cx="25" cy="9" r="3.5" fill="white"/>
+  <!-- Pulse ring — suggests active monitoring -->
+  <circle cx="25" cy="9" r="6" stroke="white" stroke-width="1" stroke-opacity="0.35" fill="none"/>
+</svg>

@@ -134,6 +134,8 @@ export interface AuditLogEntry {
   response: string
   citations: PermitCitation[] | null
   sessionId: string | null
+  flagged: boolean
+  flagReason: string | null
   createdAt: string  // ISO 8601
 }
 

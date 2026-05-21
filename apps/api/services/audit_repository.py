@@ -19,6 +19,8 @@ def _row_to_domain(row: AIAuditLog) -> AuditLogRead:
         response=row.response,
         citations=row.citations,
         session_id=row.session_id,
+        flagged=row.flagged,
+        flag_reason=row.flag_reason,
         created_at=row.created_at.isoformat(),
     )
 
@@ -32,6 +34,8 @@ async def save_log(session: AsyncSession, entry: AuditLogCreate) -> AuditLogRead
         response=entry.response,
         citations=entry.citations,
         session_id=entry.session_id,
+        flagged=entry.flagged,
+        flag_reason=entry.flag_reason,
         created_at=datetime.now(timezone.utc),
     )
     session.add(row)

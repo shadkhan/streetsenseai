@@ -1,4 +1,5 @@
-import { type NextRequest } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
+import { guardInput, checkOutput } from '@/lib/copilot-guardrails'
 import type { PermitCitation } from '@/types'
 
 // ── Mock response bank (AI-001 — replaced by LangChain agent when API key is present) ──
@@ -110,8 +111,25 @@ function sleep(ms: number): Promise<void> {
 }
 
 export async function POST(request: NextRequest) {
-  const body = await request.json() as { question: string }
-  const response = pickResponse(body.question ?? '')
+  const body = await request.json() as { question: string; sessionId?: string }
+  const question = body.question ?? ''
+  const sessionId = body.sessionId ?? 'anonymous'
+
+  // Layer 1 + 5 — input gate and rate limiter
+  const guard = guardInput(question, sessionId)
+  if (!guard.allowed) {
+    const status = guard.status === 'rate_limited' ? 429 : 400
+    return NextResponse.json(
+      { error: guard.status, message: guard.message },
+      { status },
+    )
+  }
+
+  const response = pickResponse(question)
+
+  // Layer 4 — output audit: check assembled response before streaming
+  const flagReason = checkOutput(response.text)
+  const flagged = flagReason !== null
 
   // Tokenise preserving whitespace so newlines stream through correctly
   const tokens = response.text.match(/\S+|\s+/g) ?? []
@@ -131,6 +149,8 @@ export async function POST(request: NextRequest) {
           citations: response.citations,
           suggestedQuestions: response.suggestedQuestions,
           dataTimestamp: new Date().toISOString(),
+          flagged,
+          flagReason,
         }) + '\n'
       ))
       controller.enqueue(enc.encode(JSON.stringify({ type: 'done' }) + '\n'))

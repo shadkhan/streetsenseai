@@ -25,7 +25,7 @@ const SEED_QUESTIONS = [
 
 type StreamChunk =
   | { type: 'text'; content: string }
-  | { type: 'meta'; citations: PermitCitation[]; suggestedQuestions: string[]; dataTimestamp: string }
+  | { type: 'meta'; citations: PermitCitation[]; suggestedQuestions: string[]; dataTimestamp: string; flagged: boolean; flagReason: string | null }
   | { type: 'done' }
 
 // ── Component ──────────────────────────────────────────────────────────────────
@@ -71,15 +71,21 @@ export function CopilotSheet() {
 
     let fullText = ''
     let fullCitations: PermitCitation[] = []
+    let flagged = false
+    let flagReason: string | null = null
 
     try {
       const res = await fetch('/api/copilot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: q }),
+        body: JSON.stringify({ question: q, sessionId: getSessionId() }),
       })
 
-      if (!res.ok || !res.body) throw new Error('Stream unavailable')
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({ message: 'Unable to get a response. Please try again.' })) as { message?: string }
+        throw new Error(errBody.message ?? 'Unable to get a response. Please try again.')
+      }
+      if (!res.body) throw new Error('Stream unavailable')
 
       const reader = res.body.getReader()
       const decoder = new TextDecoder()
@@ -111,6 +117,8 @@ export function CopilotSheet() {
             )
           } else if (chunk.type === 'meta') {
             fullCitations = chunk.citations
+            flagged = chunk.flagged
+            flagReason = chunk.flagReason
             setMessages((prev) =>
               prev.map((m) =>
                 m.id === assistantId
@@ -134,13 +142,16 @@ export function CopilotSheet() {
           response: fullText,
           citations: fullCitations.length > 0 ? fullCitations : null,
           sessionId: getSessionId(),
+          flagged,
+          flagReason,
         })
       }
-    } catch {
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unable to get a response. Please try again.'
       setMessages((prev) =>
         prev.map((m) =>
           m.id === assistantId
-            ? { ...m, content: 'Unable to get a response. Please try again.' }
+            ? { ...m, content: message }
             : m
         )
       )

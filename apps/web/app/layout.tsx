@@ -17,8 +17,18 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'StreetSense AI',
-  description: 'Cross-Authority Roadworks Intelligence Platform',
+  title: {
+    default: 'StreetSense AI',
+    template: '%s · StreetSense AI',
+  },
+  description: 'Cross-Authority Roadworks Intelligence Platform — corridor risk scoring, D-TRO integration, underground asset strike risk and AI-powered permit analytics.',
+  icons: {
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico', sizes: '32x32' },
+    ],
+    shortcut: '/favicon.ico',
+  },
 }
 
 export default function RootLayout({

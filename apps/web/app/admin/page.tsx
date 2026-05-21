@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
@@ -95,7 +96,7 @@ function JsonViewer({ data }: { data: unknown }) {
 
 const SERVICE_META: Record<string, { label: string; description: string; docsUrl?: string }> = {
   anthropic:      { label: 'Anthropic Claude',   description: 'AI Copilot (Sonnet 4) and permit summaries (Haiku 4.5)' },
-  street_manager: { label: 'Street Manager v7',  description: 'UK roadworks permit data — free government open data' },
+  street_manager: { label: 'Street Manager v7',  description: 'UK roadworks permit data — JWT API restricted to registered highway authorities. Open-source: uses synthetic data + opendata.manage-roadworks.service.gov.uk' },
   os_datahub:     { label: 'OS Data Hub',         description: 'USRN resolver (NSG) and road classification (Open Roads) — free tier 1M calls/month' },
   mapbox:         { label: 'Mapbox GL',           description: 'Map tiles, geocoding and location search — free tier 50k loads/month' },
   nuar:           { label: 'NUAR',                description: 'Underground asset register — restricted access, synthetic data active for Phase 4' },
@@ -690,7 +691,33 @@ export default function AdminPage() {
     <div className="min-h-screen bg-surface-page">
       {/* Admin header */}
       <header className="h-14 bg-brand flex items-center px-6 gap-4">
-        <span className="text-sm font-semibold text-ink-inverse">StreetSense AI</span>
+        <Link
+          href="/"
+          className="flex items-center gap-2 group"
+          title="Back to StreetSense AI map"
+        >
+          {/* Logo mark */}
+          <svg
+            viewBox="0 0 28 28"
+            className="w-7 h-7 shrink-0 text-ink-inverse transition-opacity group-hover:opacity-80"
+            fill="none"
+            aria-hidden="true"
+          >
+            <rect width="28" height="28" rx="6" fill="white" fillOpacity="0.15" />
+            <path
+              d="M6 20 L10 12 L14 16 L18 9 L22 14"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <circle cx="22" cy="14" r="2.5" fill="currentColor" opacity="0.85" />
+          </svg>
+          <span className="text-sm font-semibold text-ink-inverse group-hover:text-ink-inverse/90 transition-colors">
+            StreetSense AI
+          </span>
+        </Link>
+        <span className="text-ink-inverse/30 text-sm select-none">/</span>
         <span className="text-xs text-ink-inverse/60 font-normal">Admin Console</span>
         <div className="ml-auto flex items-center gap-3">
           <span className="text-xs text-ink-inverse/50">Development mode</span>

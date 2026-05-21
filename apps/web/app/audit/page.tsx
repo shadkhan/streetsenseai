@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { formatDistanceToNow } from 'date-fns'
-import { Bot, ChevronDown, ChevronUp, FileText } from 'lucide-react'
+import { AlertTriangle, Bot, ChevronDown, ChevronUp, FileText } from 'lucide-react'
 import { Header } from '@/components/layout/Header'
 import { PermitSummarySheet } from '@/components/copilot/PermitSummarySheet'
 import { Hint } from '@/components/ui/Hint'
@@ -38,6 +38,7 @@ function EntryCard({ entry, isExpanded, onToggle }: EntryCardProps) {
     <div className={cn(
       'bg-white border border-line rounded-lg overflow-hidden',
       isExpanded && 'ring-1 ring-brand/20',
+      entry.flagged && 'border-risk-high/40 bg-risk-high-bg/20',
     )}>
       <Hint text={`${isExpanded ? 'Collapse' : 'Expand'} to ${isExpanded ? 'hide' : 'view'} the full AI response, permit citations, and session details`} side="left" delayDuration={500}>
       <button
@@ -48,6 +49,12 @@ function EntryCard({ entry, isExpanded, onToggle }: EntryCardProps) {
       >
         <div className="flex flex-col gap-1.5 flex-shrink-0 w-20 pt-0.5">
           <TypeBadge type={entry.interactionType} />
+          {entry.flagged && (
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-risk-high bg-risk-high-bg px-1.5 py-0.5 rounded">
+              <AlertTriangle className="w-3 h-3" />
+              Flagged
+            </span>
+          )}
           <span className="text-xs text-ink-muted">
             {formatDistanceToNow(new Date(entry.createdAt), { addSuffix: true })}
           </span>
@@ -98,6 +105,18 @@ function EntryCard({ entry, isExpanded, onToggle }: EntryCardProps) {
             </div>
           )}
 
+          {entry.flagged && (
+            <div className="flex items-center gap-2 px-3 py-2 rounded bg-risk-high-bg border border-risk-high/30">
+              <AlertTriangle className="w-3.5 h-3.5 text-risk-high flex-shrink-0" />
+              <p className="text-xs text-risk-high">
+                Output policy flag
+                {entry.flagReason && (
+                  <> · <span className="font-mono">{entry.flagReason}</span></>
+                )}
+              </p>
+            </div>
+          )}
+
           <div className="flex items-center justify-between pt-1 border-t border-line">
             <p className="text-xs text-ink-subtle">
               {new Date(entry.createdAt).toLocaleString('en-GB', {
@@ -136,6 +155,7 @@ export default function AuditPage() {
     const today = new Date().toISOString().slice(0, 10)
     return l.createdAt.startsWith(today)
   }).length
+  const flaggedCount = logs.filter((l) => l.flagged).length
 
   const toggle = (id: string) =>
     setExpandedId((prev) => (prev === id ? null : id))
@@ -154,13 +174,14 @@ export default function AuditPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-4 gap-4">
             <StatCard label="Total Interactions" value={isLoading ? '—' : String(logs.length)} />
             <StatCard
               label="Copilot / Permits"
               value={isLoading ? '—' : `${copilotCount} / ${permitCount}`}
             />
             <StatCard label="Today" value={isLoading ? '—' : String(todayCount)} />
+            <StatCard label="Flagged" value={isLoading ? '—' : String(flaggedCount)} />
           </div>
 
           {isLoading && (
