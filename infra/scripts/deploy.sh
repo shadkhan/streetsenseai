@@ -3,7 +3,7 @@ set -e
 
 SERVER_IP=$1
 ENV_FILE=$2
-REPO_URL="https://github.com/YOUR_USERNAME/YOUR_REPO.git"
+REPO_URL="https://github.com/shadkhan/streetsenseai.git"
 APP_DIR="/opt/apps/streetsense"
 COMPOSE_FILE="infra/docker-compose.hostinger.yml"
 
