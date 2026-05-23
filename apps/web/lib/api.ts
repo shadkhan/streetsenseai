@@ -6,7 +6,17 @@ import type {
 } from '@/types'
 import type { TimeWindow } from '@/lib/stores/map'
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
+// In the browser, route through the same-origin /api/* Vercel rewrite (vercel.json) so the
+// browser only makes HTTPS requests — avoiding mixed-content blocks when the backend is HTTP.
+// On localhost Vercel rewrites are inactive, so fall through to NEXT_PUBLIC_API_URL directly.
+// On the server (SSR / embed page) use NEXT_PUBLIC_API_URL directly — no browser restriction.
+const API_BASE = (() => {
+  if (typeof window !== 'undefined') {
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    if (!isLocal) return `${window.location.origin}/api`
+  }
+  return (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000').replace(/\/$/, '')
+})()
 
 function applyWindow(url: URL, timeWindow: TimeWindow | null): URL {
   if (timeWindow) {
