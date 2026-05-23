@@ -20,6 +20,7 @@ RUN uv sync --frozen --no-dev
 
 # Copy application source
 COPY . .
+RUN chmod +x /app/entrypoint.sh
 
 # Put the venv's bin directory on PATH so uvicorn/celery are callable directly
 ENV PATH="/app/.venv/bin:$PATH"

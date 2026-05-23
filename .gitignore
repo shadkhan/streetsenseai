@@ -12,6 +12,7 @@ build/
 # Environment variables — NEVER commit these
 .env.local
 .env.*.local
+infra/.env.prod
 
 # Python
 __pycache__/
