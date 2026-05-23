@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from config import settings
 from routers import admin, audit, compliance, copilot, corridors, dtro, embed, health, nuar, scheduling, webhooks, works
 
 app = FastAPI(
@@ -10,12 +11,16 @@ app = FastAPI(
     redirect_slashes=False,
 )
 
+_allowed_origins = [o.strip() for o in settings.allowed_origins.split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_allowed_origins,
+    # Matches all Vercel preview deployments for this project (e.g. streetsenseai-web-abc123.vercel.app)
+    allow_origin_regex=r"https://streetsenseai-web[^.]*\.vercel\.app",
     allow_credentials=False,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "X-API-Key"],
 )
 
 app.include_router(works.router)

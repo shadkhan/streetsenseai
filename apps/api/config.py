@@ -64,6 +64,11 @@ class Settings(BaseSettings):
     # Production:  https://dtro.dft.gov.uk/v1
     dtro_base_url: str = "https://dtro-integration.dft.gov.uk/v1"
 
+    # CORS — comma-separated list of allowed origins
+    # Production: set ALLOWED_ORIGINS=https://streetsenseai-web.vercel.app,http://localhost:3000
+    # Vercel preview deployments are always allowed via allow_origin_regex in main.py
+    allowed_origins: str = "http://localhost:3000,http://localhost:8000"
+
     # Admin (development only)
     admin_api_key: str = ""          # If blank, admin endpoints are unprotected (local dev only)
     admin_username: str = "admin"
