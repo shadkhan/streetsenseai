@@ -49,7 +49,7 @@ const OFF_TOPIC_PATTERNS: RegExp[] = [
 
 // City names are intentionally excluded — "AI engineer in Birmingham" must not pass.
 // Any legitimate roadworks query contains a roadworks term alongside the city name.
-const DOMAIN_KEYWORD = /\b(road|street|works?|permit|corridor|traffic|lane|closure|junction|carriageway|footway|usrn|tro|ttro|d-?tro|risk|disruption|conflict|clash|overlap|schedul|compliance|overrun|promoter|authority|highway|utility|gas|water|electric|telecoms|broadband|nuar|underground|asset|strike|depth|cable|pipe|duct|fpn|section\s*5[89]|tma\s*2004|nrswa|lane\s*rental|a\d{1,3}|b\d{3,4})\b/i
+const DOMAIN_KEYWORD = /\b(road|street|works?|permit|corridor|traffic|lane|closure|junction|carriageway|footway|usrn|tro|ttro|d-?tro|risk|disruption|conflicts?|clash|overlap\w*|schedul\w*|compliance|overrun\w*|promoter|authority|highway|utility|gas|water|electric|telecoms|broadband|nuar|underground|asset|strike|depth|cable|pipe|duct|fpn|section\s*5[89]|tma\s*2004|nrswa|lane\s*rental|a\d{1,3}|b\d{3,4})\b/i
 
 // ── Rate limiter (Layer 5) ─────────────────────────────────────────────────────
 
