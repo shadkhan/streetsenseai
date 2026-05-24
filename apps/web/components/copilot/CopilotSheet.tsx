@@ -177,7 +177,7 @@ export function CopilotSheet() {
     <Sheet open={isOpen} onOpenChange={(open) => { if (!open) close() }}>
       <SheetContent
         side="right"
-        className="w-[480px] sm:max-w-[480px] !p-0 !gap-0 flex flex-col"
+        className="w-full sm:w-[480px] sm:max-w-[480px] !p-0 !gap-0 flex flex-col"
       >
         <SheetTitle className="sr-only">StreetSense Copilot</SheetTitle>
 

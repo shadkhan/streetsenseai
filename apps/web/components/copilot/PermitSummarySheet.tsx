@@ -98,7 +98,7 @@ export function PermitSummarySheet() {
     <Sheet open={isOpen} onOpenChange={(open) => { if (!open) close() }}>
       <SheetContent
         side="right"
-        className="w-[420px] sm:max-w-[420px] !p-0 !gap-0 flex flex-col"
+        className="w-full sm:w-[420px] sm:max-w-[420px] !p-0 !gap-0 flex flex-col"
       >
         <SheetTitle className="sr-only">Permit Summary</SheetTitle>
 

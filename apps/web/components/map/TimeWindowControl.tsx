@@ -44,7 +44,7 @@ export function TimeWindowControl() {
   const activeLabel = timeWindow?.label ?? 'All Active'
 
   return (
-    <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-1">
+    <div className="absolute bottom-20 sm:bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-1">
       {timeWindow && (
         <p className="text-xs text-ink bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded-full border border-line shadow-sm tabular-nums">
           {formatDateShort(timeWindow.startDate)}
@@ -60,7 +60,7 @@ export function TimeWindowControl() {
               onClick={() => setTimeWindow(preset.window)}
               aria-label={PRESET_HINTS[preset.label]}
               className={cn(
-                'px-3 py-1.5 rounded text-xs font-medium transition-colors whitespace-nowrap',
+                'px-2 py-1 sm:px-3 sm:py-1.5 rounded text-xs font-medium transition-colors whitespace-nowrap',
                 activeLabel === preset.label
                   ? 'bg-brand text-ink-inverse'
                   : 'text-ink-muted hover:text-ink hover:bg-surface-panel',

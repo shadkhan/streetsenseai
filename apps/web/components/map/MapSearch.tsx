@@ -90,7 +90,7 @@ export function MapSearch() {
   const showDropdown = open && results.length > 0
 
   return (
-    <div ref={containerRef} className="relative w-64">
+    <div ref={containerRef} className="relative w-48 sm:w-64">
       {/* Input row */}
       <div
         className={cn(
