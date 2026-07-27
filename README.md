@@ -3,7 +3,6 @@
 > **Cross-Authority Roadworks Intelligence Platform**
 > All 6 phases complete · 335 backend tests · 0 TypeScript errors
 
-Demo -> https://streetsenseai-web.vercel.app/
 
 An AI-powered platform that turns UK open government roadworks data into operational intelligence — corridor disruption risk scoring, underground asset strike risk, permit–TRO conflict detection, non-compliance analytics, and a conversational AI copilot for highway authority officers and permit managers.
 
